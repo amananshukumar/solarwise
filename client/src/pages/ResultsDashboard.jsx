@@ -58,6 +58,7 @@ import Footer from '../components/Footer';
 import CitySolarMap from '../components/CitySolarMap';
 import WeatherCard from '../components/WeatherCard';
 import { useAuth } from '../context/AuthContext';
+import { getCityCoordinates } from '../utils/cityCoordinates';
 
 const API_URL = import.meta.env.VITE_API_URL || '';
 
@@ -141,31 +142,8 @@ export default function ResultsDashboard() {
     },
   };
 
-  // City Coordinates map lookup for Leaflet Map
-  const cityCoordsMap = {
-    mumbai: { lat: 19.0760, lng: 72.8777 },
-    pune: { lat: 18.5204, lng: 73.8567 },
-    nagpur: { lat: 21.1458, lng: 79.0882 },
-    nashik: { lat: 20.0059, lng: 73.7898 },
-    ahmedabad: { lat: 23.0225, lng: 72.5714 },
-    surat: { lat: 21.1702, lng: 72.8311 },
-    vadodara: { lat: 22.3072, lng: 73.1812 },
-    bengaluru: { lat: 12.9716, lng: 77.5946 },
-    mysuru: { lat: 12.2958, lng: 76.6394 },
-    'new delhi': { lat: 28.6139, lng: 77.2090 },
-    delhi: { lat: 28.6139, lng: 77.2090 },
-    noida: { lat: 28.5355, lng: 77.3910 },
-    chennai: { lat: 13.0827, lng: 80.2707 },
-    coimbatore: { lat: 11.0168, lng: 76.9558 },
-    lucknow: { lat: 26.8467, lng: 80.9462 },
-    jaipur: { lat: 26.9124, lng: 75.7873 },
-    kolkata: { lat: 22.5726, lng: 88.3639 },
-    hyderabad: { lat: 17.3850, lng: 78.4867 },
-    kochi: { lat: 9.9312, lng: 76.2673 },
-  };
-
-  const selectedCityKey = (report.inputs.city || 'Mumbai').toLowerCase();
-  const coords = cityCoordsMap[selectedCityKey] || { lat: 19.0760, lng: 72.8777 };
+  // Coordinates lookup for Leaflet Map & Weather
+  const coords = getCityCoordinates(report.inputs?.city);
 
   // 1. Pie Chart Data: Investment & Subsidy Breakdown
   const pieData = [
@@ -242,6 +220,21 @@ export default function ResultsDashboard() {
       return;
     }
 
+    const localItem = {
+      _id: 'calc_' + Date.now(),
+      createdAt: new Date().toISOString(),
+      inputs: report.inputs,
+      results: report,
+    };
+
+    // Save to localStorage history
+    try {
+      const existing = JSON.parse(localStorage.getItem('solarwise_user_history') || '[]');
+      localStorage.setItem('solarwise_user_history', JSON.stringify([localItem, ...existing]));
+    } catch (e) {
+      console.warn('LocalStorage save error:', e);
+    }
+
     try {
       setSavingReport(true);
       const res = await axios.post(`${API_URL}/api/calculator/save`, {
@@ -253,16 +246,15 @@ export default function ResultsDashboard() {
         setReportSaved(true);
         setToastMsg({
           type: 'success',
-          text: 'Solar calculation report saved to your MongoDB account successfully!',
+          text: 'Solar report saved to your account and dashboard history!',
         });
       }
     } catch (err) {
       console.warn('Save report API error:', err);
-      // Client fallback save
       setReportSaved(true);
       setToastMsg({
         type: 'success',
-        text: 'Solar calculation report saved to your Dashboard!',
+        text: 'Solar report saved to your Dashboard history!',
       });
     } finally {
       setSavingReport(false);

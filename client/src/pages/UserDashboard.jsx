@@ -56,16 +56,41 @@ export default function UserDashboard() {
   const [isCompareModalOpen, setIsCompareModalOpen] = useState(false);
   const [deletingId, setDeletingId] = useState(null);
 
-  // Fetch Calculation History from Backend MongoDB
+  // Fetch Calculation History from Backend MongoDB & LocalStorage Sync
   const fetchHistory = async () => {
     try {
       setLoading(true);
-      const res = await axios.get(`${API_URL}/api/calculator/history`);
-      if (res.data.success && Array.isArray(res.data.data)) {
-        setHistory(res.data.data);
+      let apiHistory = [];
+      try {
+        const res = await axios.get(`${API_URL}/api/calculator/history`);
+        if (res.data.success && Array.isArray(res.data.data)) {
+          apiHistory = res.data.data;
+        }
+      } catch (err) {
+        console.warn('Failed to fetch user history from API:', err);
       }
+
+      // Read local history stored in browser
+      let localHistory = [];
+      try {
+        localHistory = JSON.parse(localStorage.getItem('solarwise_user_history') || '[]');
+      } catch (e) {
+        localHistory = [];
+      }
+
+      // Combine and deduplicate
+      const combinedMap = new Map();
+      [...apiHistory, ...localHistory].forEach((item) => {
+        if (!item) return;
+        const key = item._id || (item.inputs ? `${item.inputs.city}_${item.inputs.monthlyBill}` : JSON.stringify(item));
+        if (!combinedMap.has(key)) {
+          combinedMap.set(key, item);
+        }
+      });
+
+      setHistory(Array.from(combinedMap.values()));
     } catch (err) {
-      console.warn('Failed to fetch user history from API:', err);
+      console.warn('Error reading calculation history:', err);
     } finally {
       setLoading(false);
     }
@@ -82,7 +107,15 @@ export default function UserDashboard() {
 
     try {
       setDeletingId(id);
-      await axios.delete(`${API_URL}/api/calculator/history/${id}`);
+      await axios.delete(`${API_URL}/api/calculator/history/${id}`).catch(() => {});
+
+      // Remove from localStorage as well
+      try {
+        const local = JSON.parse(localStorage.getItem('solarwise_user_history') || '[]');
+        const filtered = local.filter((item) => item._id !== id);
+        localStorage.setItem('solarwise_user_history', JSON.stringify(filtered));
+      } catch (e) {}
+
       setHistory((prev) => prev.filter((item) => item._id !== id));
       setSelectedReportsForCompare((prev) => prev.filter((item) => item._id !== id));
     } catch (err) {
@@ -138,13 +171,41 @@ export default function UserDashboard() {
   // Chart Data for Historical Comparison
   const chartData = useMemo(() => {
     return filteredHistory.slice(0, 10).map((item, idx) => {
-      const results = item.results?.results || item.results || {};
       const inputs = item.inputs || item.results?.inputs || {};
+      const res = item.results?.results || item.results || {};
+
+      const systemKw = Number(
+        res.system?.recommendedKw ??
+        res.recommendedKw ??
+        res.systemKw ??
+        item.results?.system?.recommendedKw ??
+        3.0
+      );
+
+      const annualSavings = Number(
+        res.generation?.annualSavingsRs ??
+        res.annualSavingsRs ??
+        res.annualSavings ??
+        res.generation?.annualSavings ??
+        item.results?.generation?.annualSavingsRs ??
+        (systemKw * 1200 * Number(inputs.electricityRate || 8))
+      );
+
+      const netCost = Number(
+        res.financial?.finalPayableAmount ??
+        res.finalPayableAmount ??
+        res.netCost ??
+        item.results?.financial?.finalPayableAmount ??
+        (systemKw * 55000 - 78000)
+      );
+
+      const cityName = inputs.city || res.inputs?.city || 'Kolkata';
+
       return {
-        name: `${inputs.city || 'Calc'} (${results.recommendedKw || 3}kW)`,
-        systemKw: results.recommendedKw || 0,
-        annualSavings: results.annualSavingsRs || results.annualBillSavings || 0,
-        netCost: results.netSystemCost || results.finalPayableAmount || 0,
+        name: `${cityName} (${systemKw} kW)`,
+        systemKw,
+        annualSavings,
+        netCost,
       };
     });
   }, [filteredHistory]);

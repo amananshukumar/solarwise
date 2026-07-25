@@ -51,4 +51,39 @@ const protect = async (req, res, next) => {
   }
 };
 
-module.exports = { protect };
+const optionalProtect = async (req, res, next) => {
+  if (
+    req.headers.authorization &&
+    req.headers.authorization.startsWith('Bearer')
+  ) {
+    try {
+      const token = req.headers.authorization.split(' ')[1];
+      const decoded = jwt.verify(token, process.env.JWT_SECRET || 'solarwise_super_secret_jwt_key_2026_india');
+
+      try {
+        req.user = await User.findById(decoded.id).select('-password');
+      } catch (dbErr) {
+        req.user = {
+          _id: decoded.id,
+          name: decoded.name || 'Solar User',
+          email: decoded.email || 'user@solarwise.in',
+          role: decoded.role || 'user',
+        };
+      }
+
+      if (!req.user) {
+        req.user = {
+          _id: decoded.id,
+          name: decoded.name || 'Solar User',
+          email: decoded.email || 'user@solarwise.in',
+          role: decoded.role || 'user',
+        };
+      }
+    } catch (error) {
+      console.warn('Optional auth token invalid:', error.message);
+    }
+  }
+  next();
+};
+
+module.exports = { protect, optionalProtect };

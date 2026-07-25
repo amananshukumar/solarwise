@@ -158,18 +158,62 @@ const sampleStateData = [
     solarIrradiance: 5.0,
     discomName: 'KSEB',
   },
+  {
+    stateName: 'Bihar',
+    cities: ['Patna', 'Gaya', 'Muzaffarpur', 'Bhagalpur', 'Darbhanga', 'Purnia'],
+    cityDetails: [
+      { name: 'Patna', lat: 25.5941, lng: 85.1376 },
+      { name: 'Gaya', lat: 24.7955, lng: 85.0002 },
+      { name: 'Muzaffarpur', lat: 26.1209, lng: 85.3647 },
+      { name: 'Bhagalpur', lat: 25.2425, lng: 87.0124 },
+      { name: 'Darbhanga', lat: 26.1542, lng: 85.8918 },
+      { name: 'Purnia', lat: 25.7771, lng: 87.4753 },
+    ],
+    defaultRatePerKwh: 7.4,
+    solarIrradiance: 5.2,
+    discomName: 'NBPDCL / SBPDCL',
+  },
+  {
+    stateName: 'Madhya Pradesh',
+    cities: ['Bhopal', 'Indore', 'Gwalior', 'Jabalpur', 'Ujjain'],
+    cityDetails: [
+      { name: 'Bhopal', lat: 23.2599, lng: 77.4126 },
+      { name: 'Indore', lat: 22.7196, lng: 75.8577 },
+      { name: 'Gwalior', lat: 26.2183, lng: 78.1828 },
+      { name: 'Jabalpur', lat: 23.1815, lng: 79.9864 },
+      { name: 'Ujjain', lat: 23.1765, lng: 75.7885 },
+    ],
+    defaultRatePerKwh: 7.5,
+    solarIrradiance: 5.6,
+    discomName: 'MPPKVVCL / MPMKVVCL / MPPoVVCL',
+  },
+  {
+    stateName: 'Odisha',
+    cities: ['Bhubaneswar', 'Cuttack', 'Rourkela', 'Puri'],
+    cityDetails: [
+      { name: 'Bhubaneswar', lat: 20.2961, lng: 85.8245 },
+      { name: 'Cuttack', lat: 20.4625, lng: 85.8828 },
+      { name: 'Rourkela', lat: 22.2604, lng: 84.8536 },
+      { name: 'Puri', lat: 19.8135, lng: 85.8312 },
+    ],
+    defaultRatePerKwh: 6.8,
+    solarIrradiance: 5.1,
+    discomName: 'TPCODL / NESCO / WESCO',
+  },
 ];
 
 // Coordinate lookup helper for any city name
 const getCoordinatesForCity = (cityName) => {
-  if (!cityName) return { lat: 19.0760, lng: 72.8777 }; // Default Mumbai
+  if (!cityName) return { lat: 25.5941, lng: 85.1376 }; // Default Patna
+  const nameLower = cityName.toLowerCase();
   for (const st of sampleStateData) {
     if (st.cityDetails) {
-      const match = st.cityDetails.find((c) => c.name.toLowerCase() === cityName.toLowerCase());
+      const match = st.cityDetails.find((c) => c.name.toLowerCase() === nameLower);
       if (match) return { lat: match.lat, lng: match.lng };
     }
   }
-  return { lat: 19.0760, lng: 72.8777 };
+  if (nameLower.includes('patna')) return { lat: 25.5941, lng: 85.1376 };
+  return { lat: 22.5726, lng: 88.3639 };
 };
 
 const seedStateData = async () => {

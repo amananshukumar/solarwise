@@ -7,14 +7,14 @@ const {
   getUserCalculationHistory,
   deleteCalculationHistory,
 } = require('../controllers/calculatorController');
-const { protect } = require('../middleware/authMiddleware');
+const { protect, optionalProtect } = require('../middleware/authMiddleware');
 
 router.get('/location-data', getLocationData);
-router.post('/calculate', calculateSolar);
+router.post('/calculate', optionalProtect, calculateSolar);
+router.post('/save', optionalProtect, saveCalculation);
 
 // Protected User History Routes
-router.post('/save', protect, saveCalculation);
-router.get('/history', protect, getUserCalculationHistory);
+router.get('/history', optionalProtect, getUserCalculationHistory);
 router.delete('/history/:id', protect, deleteCalculationHistory);
 
 module.exports = router;

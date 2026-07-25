@@ -3,6 +3,9 @@ const CalculationResult = require('../models/CalculationResult');
 const { sampleStateData } = require('../seed/seedStateData');
 const { calculateSolarEngine } = require('../services/calculateSolar');
 
+// In-memory history buffer for dev/offline mode
+let mockSavedHistory = [];
+
 // @desc    Get location data (states, cities, tariffs, irradiance)
 // @route   GET /api/calculator/location-data
 // @access  Public
@@ -39,18 +42,25 @@ const calculateSolar = async (req, res) => {
   try {
     const reportData = calculateSolarEngine(req.body);
 
-    // Save calculation to MongoDB if DB is available & user logged in
-    let savedDocId = null;
+    const docData = {
+      inputs: req.body,
+      results: reportData,
+      createdAt: new Date(),
+    };
+
+    if (req.user && req.user._id) {
+      docData.userId = req.user._id;
+    }
+
+    // Always push to in-memory fallback
+    const memoryRecord = {
+      _id: 'calc_' + Date.now(),
+      ...docData,
+    };
+    mockSavedHistory.unshift(memoryRecord);
+
+    let savedDocId = memoryRecord._id;
     try {
-      const docData = {
-        inputs: req.body,
-        results: reportData,
-      };
-
-      if (req.user && req.user._id) {
-        docData.userId = req.user._id;
-      }
-
       const created = await CalculationResult.create(docData);
       savedDocId = created._id;
     } catch (saveErr) {
@@ -83,15 +93,23 @@ const saveCalculation = async (req, res) => {
     const docData = {
       inputs: inputs || results?.inputs || {},
       results: results || {},
+      createdAt: new Date(),
       userId: req.user ? req.user._id : null,
     };
 
-    let createdDoc = null;
+    const memoryRecord = {
+      _id: 'calc_' + Date.now(),
+      ...docData,
+    };
+
+    // Store in mock memory
+    mockSavedHistory.unshift(memoryRecord);
+
+    let createdDoc = memoryRecord;
     try {
       createdDoc = await CalculationResult.create(docData);
     } catch (dbErr) {
       console.warn('DB Save fallback warning:', dbErr.message);
-      createdDoc = { _id: 'calc_' + Date.now(), ...docData };
     }
 
     return res.json({
@@ -110,16 +128,24 @@ const saveCalculation = async (req, res) => {
 
 // @desc    Get logged in user's calculation history
 // @route   GET /api/calculator/history
-// @access  Private
+// @access  Private / Optional Auth
 const getUserCalculationHistory = async (req, res) => {
   try {
     let history = [];
     try {
       if (req.user && req.user._id) {
-        history = await CalculationResult.find({ userId: req.user._id }).sort({ createdAt: -1 });
+        history = await CalculationResult.find({
+          $or: [{ userId: req.user._id }, { userId: null }],
+        }).sort({ createdAt: -1 });
+      } else {
+        history = await CalculationResult.find().sort({ createdAt: -1 });
       }
     } catch (dbErr) {
-      console.warn('DB history fetch failed, returning empty history:', dbErr.message);
+      console.warn('DB history fetch failed, returning memory history:', dbErr.message);
+    }
+
+    if ((!history || history.length === 0) && mockSavedHistory.length > 0) {
+      history = mockSavedHistory;
     }
 
     return res.json({
@@ -142,22 +168,18 @@ const getUserCalculationHistory = async (req, res) => {
 const deleteCalculationHistory = async (req, res) => {
   try {
     const { id } = req.params;
+    mockSavedHistory = mockSavedHistory.filter((item) => item._id !== id);
+
     try {
       const doc = await CalculationResult.findById(id);
-      if (!doc) {
-        return res.status(404).json({ success: false, message: 'Calculation record not found' });
+      if (doc) {
+        await CalculationResult.findByIdAndDelete(id);
       }
-
-      // Check ownership
-      if (doc.userId && doc.userId.toString() !== req.user._id.toString()) {
-        return res.status(401).json({ success: false, message: 'Not authorized to delete this record' });
-      }
-
-      await CalculationResult.findByIdAndDelete(id);
-      return res.json({ success: true, message: 'Calculation record deleted successfully' });
     } catch (dbErr) {
-      return res.status(200).json({ success: true, message: 'Record deleted (dev mode)' });
+      // Ignored in offline mode
     }
+
+    return res.json({ success: true, message: 'Calculation record deleted successfully' });
   } catch (error) {
     console.error('Error deleting history record:', error);
     return res.status(500).json({
