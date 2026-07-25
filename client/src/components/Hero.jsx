@@ -1,20 +1,9 @@
 import React from 'react';
+import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { Sun, Zap, TrendingUp, IndianRupee, ShieldCheck, ArrowRight, Sparkles } from 'lucide-react';
-import { useAuth } from '../context/AuthContext';
 
 export default function Hero() {
-  const { user, openAuthModal } = useAuth();
-
-  const handleCalculateClick = () => {
-    if (!user) {
-      openAuthModal('register');
-    } else {
-      const el = document.getElementById('solar-calculator');
-      if (el) el.scrollIntoView({ behavior: 'smooth' });
-    }
-  };
-
   return (
     <section className="relative overflow-hidden pt-8 pb-20 md:py-24">
       {/* Dynamic Background Glows */}
@@ -52,13 +41,13 @@ export default function Hero() {
 
             {/* CTA Buttons */}
             <div className="flex flex-col sm:flex-row items-center justify-center lg:justify-start gap-4 pt-2">
-              <button
-                onClick={handleCalculateClick}
+              <Link
+                to="/calculator"
                 className="w-full sm:w-auto px-8 py-4 text-base font-bold text-white rounded-2xl bg-gradient-to-r from-emerald-600 via-teal-600 to-emerald-700 hover:from-emerald-500 hover:to-teal-500 shadow-lg shadow-emerald-500/30 hover:shadow-emerald-500/50 transition-all hover:scale-[1.02] active:scale-95 flex items-center justify-center gap-3 group"
               >
                 <span>Calculate My Solar Savings</span>
                 <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
-              </button>
+              </Link>
 
               <a
                 href="#faq"

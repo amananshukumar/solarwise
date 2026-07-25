@@ -11,6 +11,9 @@ import SolarSavingsCTA from './components/SolarSavingsCTA';
 import FAQ from './components/FAQ';
 import Footer from './components/Footer';
 import AuthModal from './components/AuthModal';
+import CalculatorPage from './pages/CalculatorPage';
+import ResultsDashboard from './pages/ResultsDashboard';
+import UserDashboard from './pages/UserDashboard';
 
 function LandingPage() {
   return (
@@ -35,6 +38,9 @@ export default function App() {
         <Router>
           <Routes>
             <Route path="/" element={<LandingPage />} />
+            <Route path="/calculator" element={<CalculatorPage />} />
+            <Route path="/results" element={<ResultsDashboard />} />
+            <Route path="/dashboard" element={<UserDashboard />} />
           </Routes>
         </Router>
       </AuthProvider>

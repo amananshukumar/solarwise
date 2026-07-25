@@ -3,12 +3,17 @@ const cors = require('cors');
 const dotenv = require('dotenv');
 const connectDB = require('./config/db');
 const authRoutes = require('./routes/authRoutes');
+const calculatorRoutes = require('./routes/calculatorRoutes');
+const weatherRoutes = require('./routes/weatherRoutes');
+const { seedStateData } = require('./seed/seedStateData');
 
 // Load environment variables
 dotenv.config();
 
-// Connect to Database
-connectDB();
+// Connect to Database & Seed Initial State Data
+connectDB().then(() => {
+  seedStateData();
+});
 
 const app = express();
 
@@ -27,7 +32,6 @@ const allowedOrigins = [
 app.use(
   cors({
     origin: function (origin, callback) {
-      // allow requests with no origin (like mobile apps, curl, postman)
       if (!origin) return callback(null, true);
       if (allowedOrigins.indexOf(origin) !== -1 || process.env.NODE_ENV !== 'production') {
         return callback(null, true);
@@ -50,6 +54,8 @@ app.get('/api/health', (req, res) => {
 
 // API Routes
 app.use('/api/auth', authRoutes);
+app.use('/api/calculator', calculatorRoutes);
+app.use('/api/weather', weatherRoutes);
 
 // 404 Handler
 app.use((req, res) => {
