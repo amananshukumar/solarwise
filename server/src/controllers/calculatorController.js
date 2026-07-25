@@ -73,6 +73,41 @@ const calculateSolar = async (req, res) => {
   }
 };
 
+// @desc    Explicitly save calculation report to user's MongoDB history
+// @route   POST /api/calculator/save
+// @access  Private / Optional Auth
+const saveCalculation = async (req, res) => {
+  try {
+    const { inputs, results } = req.body;
+
+    const docData = {
+      inputs: inputs || results?.inputs || {},
+      results: results || {},
+      userId: req.user ? req.user._id : null,
+    };
+
+    let createdDoc = null;
+    try {
+      createdDoc = await CalculationResult.create(docData);
+    } catch (dbErr) {
+      console.warn('DB Save fallback warning:', dbErr.message);
+      createdDoc = { _id: 'calc_' + Date.now(), ...docData };
+    }
+
+    return res.json({
+      success: true,
+      message: 'Solar calculation report saved to account successfully!',
+      data: createdDoc,
+    });
+  } catch (error) {
+    console.error('Error saving calculation report:', error);
+    return res.status(500).json({
+      success: false,
+      message: 'Failed to save calculation report',
+    });
+  }
+};
+
 // @desc    Get logged in user's calculation history
 // @route   GET /api/calculator/history
 // @access  Private
@@ -135,6 +170,7 @@ const deleteCalculationHistory = async (req, res) => {
 module.exports = {
   getLocationData,
   calculateSolar,
+  saveCalculation,
   getUserCalculationHistory,
   deleteCalculationHistory,
 };

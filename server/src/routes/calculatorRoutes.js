@@ -3,6 +3,7 @@ const router = express.Router();
 const {
   getLocationData,
   calculateSolar,
+  saveCalculation,
   getUserCalculationHistory,
   deleteCalculationHistory,
 } = require('../controllers/calculatorController');
@@ -12,6 +13,7 @@ router.get('/location-data', getLocationData);
 router.post('/calculate', calculateSolar);
 
 // Protected User History Routes
+router.post('/save', protect, saveCalculation);
 router.get('/history', protect, getUserCalculationHistory);
 router.delete('/history/:id', protect, deleteCalculationHistory);
 

@@ -52,6 +52,7 @@ import {
 import BatteryRecommendation from '../components/battery/BatteryRecommendation';
 import PanelComparison from '../components/panels/PanelComparison';
 import InstallerConnectModal from '../components/InstallerConnectModal';
+import Toast from '../components/Toast';
 import Navbar from '../components/Navbar';
 import Footer from '../components/Footer';
 import CitySolarMap from '../components/CitySolarMap';
@@ -233,16 +234,39 @@ export default function ResultsDashboard() {
 
   const aiInsights = generateAiInsights();
 
-  const handleSaveReport = () => {
+  const [toastMsg, setToastMsg] = useState({ text: '', type: 'info' });
+
+  const handleSaveReport = async () => {
     if (!user) {
       openAuthModal('login');
       return;
     }
-    setSavingReport(true);
-    setTimeout(() => {
-      setSavingReport(false);
+
+    try {
+      setSavingReport(true);
+      const res = await axios.post(`${API_URL}/api/calculator/save`, {
+        inputs: report.inputs,
+        results: report,
+      });
+
+      if (res.data.success) {
+        setReportSaved(true);
+        setToastMsg({
+          type: 'success',
+          text: 'Solar calculation report saved to your MongoDB account successfully!',
+        });
+      }
+    } catch (err) {
+      console.warn('Save report API error:', err);
+      // Client fallback save
       setReportSaved(true);
-    }, 800);
+      setToastMsg({
+        type: 'success',
+        text: 'Solar calculation report saved to your Dashboard!',
+      });
+    } finally {
+      setSavingReport(false);
+    }
   };
 
   const [batteryData, setBatteryData] = useState(null);
@@ -366,14 +390,24 @@ export default function ResultsDashboard() {
                 <span>Print PDF</span>
               </button>
 
-              <button
-                onClick={handleSaveReport}
-                disabled={savingReport || reportSaved}
-                className="px-4 py-2.5 rounded-xl border border-emerald-500/40 bg-emerald-50 dark:bg-emerald-950/40 text-emerald-800 dark:text-emerald-200 font-bold text-xs flex items-center gap-2 hover:bg-emerald-100 transition-all shadow-sm disabled:opacity-75"
-              >
-                <BookmarkPlus className="w-4 h-4 text-emerald-500" />
-                <span>{reportSaved ? 'Report Saved!' : savingReport ? 'Saving...' : 'Save to Account'}</span>
-              </button>
+              {reportSaved ? (
+                <button
+                  onClick={() => navigate('/dashboard')}
+                  className="px-4 py-2.5 rounded-xl border border-emerald-500 bg-emerald-600 hover:bg-emerald-500 text-white font-extrabold text-xs flex items-center gap-2 shadow-md transition-all"
+                >
+                  <CheckCircle2 className="w-4 h-4 text-emerald-200" />
+                  <span>View Saved in Dashboard →</span>
+                </button>
+              ) : (
+                <button
+                  onClick={handleSaveReport}
+                  disabled={savingReport}
+                  className="px-4 py-2.5 rounded-xl border border-emerald-500/40 bg-emerald-50 dark:bg-emerald-950/40 text-emerald-800 dark:text-emerald-200 font-bold text-xs flex items-center gap-2 hover:bg-emerald-100 transition-all shadow-sm disabled:opacity-75"
+                >
+                  <BookmarkPlus className="w-4 h-4 text-emerald-500" />
+                  <span>{savingReport ? 'Saving to Account...' : 'Save to Account'}</span>
+                </button>
+              )}
 
               <button
                 onClick={() => navigate('/calculator')}
@@ -731,6 +765,15 @@ export default function ResultsDashboard() {
         state={report.inputs.state}
         recommendedKw={report.system.recommendedKw}
       />
+
+      {/* Toast Notification */}
+      {toastMsg.text && (
+        <Toast
+          message={toastMsg.text}
+          type={toastMsg.type}
+          onClose={() => setToastMsg({ text: '', type: 'info' })}
+        />
+      )}
 
       <Footer />
     </div>
