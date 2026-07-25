@@ -19,6 +19,22 @@ export default function Navbar() {
     if (mobileMenuOpen) setMobileMenuOpen(false);
   };
 
+  const pathname = location.pathname;
+  const hash = location.hash;
+
+  // Active Link Helpers
+  const isHomeActive = pathname === '/' && (!hash || hash === '' || hash === '#top');
+  const isCalculatorActive = pathname === '/calculator' || pathname === '/results';
+  const isDashboardActive = pathname === '/dashboard';
+  const isAdminActive = pathname === '/admin';
+  const isFeaturesActive = (pathname === '/' || pathname === '') && hash === '#features';
+  const isFaqActive = (pathname === '/' || pathname === '') && hash === '#faq';
+
+  const linkClass = (isActive) =>
+    isActive
+      ? 'text-emerald-600 dark:text-emerald-400 font-extrabold border-b-2 border-emerald-500 pb-1 shadow-sm transition-all flex items-center gap-1.5'
+      : 'text-slate-700 dark:text-slate-200 font-semibold border-b-2 border-transparent pb-1 hover:text-emerald-600 dark:hover:text-emerald-400 hover:border-emerald-400/50 transition-all flex items-center gap-1.5';
+
   return (
     <header className="sticky top-0 z-40 w-full glass-nav transition-all duration-300">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-20 flex items-center justify-between">
@@ -40,40 +56,36 @@ export default function Navbar() {
         </Link>
 
         {/* Desktop Navigation */}
-        <nav className="hidden md:flex items-center gap-8 font-medium text-sm text-slate-700 dark:text-slate-200">
-          <Link to="/" className="hover:text-emerald-600 dark:hover:text-emerald-400 transition-colors">
-            Home
+        <nav className="hidden md:flex items-center gap-7 font-medium text-sm">
+          <Link to="/" className={linkClass(isHomeActive)}>
+            <span>Home</span>
           </Link>
-          <Link
-            to="/calculator"
-            className="flex items-center gap-1.5 text-emerald-600 dark:text-emerald-400 font-bold hover:text-emerald-700 transition-colors"
-          >
+
+          <Link to="/calculator" className={linkClass(isCalculatorActive)}>
             <Calculator className="w-4 h-4 text-amber-500" />
             <span>Solar Calculator</span>
           </Link>
+
           {user && (
-            <Link
-              to="/dashboard"
-              className="flex items-center gap-1.5 font-bold text-slate-800 dark:text-slate-200 hover:text-emerald-600 dark:hover:text-emerald-400 transition-colors"
-            >
+            <Link to="/dashboard" className={linkClass(isDashboardActive)}>
               <LayoutDashboard className="w-4 h-4 text-emerald-500" />
               <span>Dashboard</span>
             </Link>
           )}
+
           {isAdmin && (
-            <Link
-              to="/admin"
-              className="flex items-center gap-1.5 font-bold text-amber-600 dark:text-amber-400 hover:text-amber-700 transition-colors"
-            >
+            <Link to="/admin" className={linkClass(isAdminActive)}>
               <ShieldCheck className="w-4 h-4 text-amber-500" />
               <span>Admin Panel</span>
             </Link>
           )}
-          <a href="/#features" className="hover:text-emerald-600 dark:hover:text-emerald-400 transition-colors">
-            Features
+
+          <a href="/#features" className={linkClass(isFeaturesActive)}>
+            <span>Features</span>
           </a>
-          <a href="/#faq" className="hover:text-emerald-600 dark:hover:text-emerald-400 transition-colors">
-            PM Surya Ghar FAQ
+
+          <a href="/#faq" className={linkClass(isFaqActive)}>
+            <span>PM Surya Ghar FAQ</span>
           </a>
         </nav>
 
@@ -148,14 +160,14 @@ export default function Navbar() {
           <Link
             to="/"
             onClick={() => setMobileMenuOpen(false)}
-            className="block text-slate-700 dark:text-slate-200 font-medium hover:text-emerald-600"
+            className={`block ${isHomeActive ? 'text-emerald-600 dark:text-emerald-400 font-extrabold border-b-2 border-emerald-500 pb-1' : 'text-slate-700 dark:text-slate-200 font-semibold'}`}
           >
             Home
           </Link>
           <Link
             to="/calculator"
             onClick={() => setMobileMenuOpen(false)}
-            className="block font-bold text-emerald-600 dark:text-emerald-400"
+            className={`block ${isCalculatorActive ? 'text-emerald-600 dark:text-emerald-400 font-extrabold border-b-2 border-emerald-500 pb-1' : 'text-slate-700 dark:text-slate-200 font-semibold'}`}
           >
             Solar Calculator
           </Link>
@@ -163,7 +175,7 @@ export default function Navbar() {
             <Link
               to="/dashboard"
               onClick={() => setMobileMenuOpen(false)}
-              className="block font-bold text-slate-800 dark:text-slate-200 hover:text-emerald-600"
+              className={`block ${isDashboardActive ? 'text-emerald-600 dark:text-emerald-400 font-extrabold border-b-2 border-emerald-500 pb-1' : 'text-slate-700 dark:text-slate-200 font-semibold'}`}
             >
               My Dashboard
             </Link>
@@ -172,7 +184,7 @@ export default function Navbar() {
             <Link
               to="/admin"
               onClick={() => setMobileMenuOpen(false)}
-              className="block font-bold text-amber-600 dark:text-amber-400"
+              className={`block ${isAdminActive ? 'text-amber-600 dark:text-amber-400 font-extrabold border-b-2 border-amber-500 pb-1' : 'text-amber-600 font-semibold'}`}
             >
               Admin Panel
             </Link>
@@ -180,14 +192,14 @@ export default function Navbar() {
           <a
             href="/#features"
             onClick={() => setMobileMenuOpen(false)}
-            className="block text-slate-700 dark:text-slate-200 font-medium hover:text-emerald-600"
+            className={`block ${isFeaturesActive ? 'text-emerald-600 dark:text-emerald-400 font-extrabold border-b-2 border-emerald-500 pb-1' : 'text-slate-700 dark:text-slate-200 font-semibold'}`}
           >
             Features
           </a>
           <a
             href="/#faq"
             onClick={() => setMobileMenuOpen(false)}
-            className="block text-slate-700 dark:text-slate-200 font-medium hover:text-emerald-600"
+            className={`block ${isFaqActive ? 'text-emerald-600 dark:text-emerald-400 font-extrabold border-b-2 border-emerald-500 pb-1' : 'text-slate-700 dark:text-slate-200 font-semibold'}`}
           >
             PM Surya Ghar FAQ
           </a>
