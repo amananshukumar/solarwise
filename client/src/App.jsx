@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { Suspense, lazy } from 'react';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import { ThemeProvider } from './context/ThemeContext';
 import { AuthProvider } from './context/AuthContext';
@@ -11,9 +11,14 @@ import SolarSavingsCTA from './components/SolarSavingsCTA';
 import FAQ from './components/FAQ';
 import Footer from './components/Footer';
 import AuthModal from './components/AuthModal';
-import CalculatorPage from './pages/CalculatorPage';
-import ResultsDashboard from './pages/ResultsDashboard';
-import UserDashboard from './pages/UserDashboard';
+import { PageSpinner } from './components/SkeletonLoader';
+
+// Lazy Loaded Page Components for Code-Splitting & Performance
+const CalculatorPage = lazy(() => import('./pages/CalculatorPage'));
+const ResultsDashboard = lazy(() => import('./pages/ResultsDashboard'));
+const UserDashboard = lazy(() => import('./pages/UserDashboard'));
+const AdminPanel = lazy(() => import('./pages/AdminPanel'));
+const NotFoundPage = lazy(() => import('./pages/NotFoundPage'));
 
 function LandingPage() {
   return (
@@ -36,12 +41,16 @@ export default function App() {
     <ThemeProvider>
       <AuthProvider>
         <Router>
-          <Routes>
-            <Route path="/" element={<LandingPage />} />
-            <Route path="/calculator" element={<CalculatorPage />} />
-            <Route path="/results" element={<ResultsDashboard />} />
-            <Route path="/dashboard" element={<UserDashboard />} />
-          </Routes>
+          <Suspense fallback={<PageSpinner />}>
+            <Routes>
+              <Route path="/" element={<LandingPage />} />
+              <Route path="/calculator" element={<CalculatorPage />} />
+              <Route path="/results" element={<ResultsDashboard />} />
+              <Route path="/dashboard" element={<UserDashboard />} />
+              <Route path="/admin" element={<AdminPanel />} />
+              <Route path="*" element={<NotFoundPage />} />
+            </Routes>
+          </Suspense>
         </Router>
       </AuthProvider>
     </ThemeProvider>

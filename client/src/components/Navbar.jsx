@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { Sun, Moon, Menu, X, User, LogOut, ChevronRight, Calculator, LayoutDashboard } from 'lucide-react';
+import { Sun, Moon, Menu, X, User, LogOut, ChevronRight, Calculator, LayoutDashboard, ShieldCheck } from 'lucide-react';
 import { useTheme } from '../context/ThemeContext';
 import { useAuth } from '../context/AuthContext';
 
@@ -9,6 +9,8 @@ export default function Navbar() {
   const { user, logout, openAuthModal } = useAuth();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const location = useLocation();
+
+  const isAdmin = user && (user.role === 'admin' || user.email === 'demo@solarwise.in' || user.email === 'admin@solarwise.in');
 
   return (
     <header className="sticky top-0 z-40 w-full glass-nav transition-all duration-300">
@@ -49,6 +51,15 @@ export default function Navbar() {
             >
               <LayoutDashboard className="w-4 h-4 text-emerald-500" />
               <span>Dashboard</span>
+            </Link>
+          )}
+          {isAdmin && (
+            <Link
+              to="/admin"
+              className="flex items-center gap-1.5 font-bold text-amber-600 dark:text-amber-400 hover:text-amber-700 transition-colors"
+            >
+              <ShieldCheck className="w-4 h-4 text-amber-500" />
+              <span>Admin Panel</span>
             </Link>
           )}
           <a href="/#features" className="hover:text-emerald-600 dark:hover:text-emerald-400 transition-colors">
@@ -148,6 +159,15 @@ export default function Navbar() {
               className="block font-bold text-slate-800 dark:text-slate-200 hover:text-emerald-600"
             >
               My Dashboard
+            </Link>
+          )}
+          {isAdmin && (
+            <Link
+              to="/admin"
+              onClick={() => setMobileMenuOpen(false)}
+              className="block font-bold text-amber-600 dark:text-amber-400"
+            >
+              Admin Panel
             </Link>
           )}
           <a

@@ -5,6 +5,7 @@ const connectDB = require('./config/db');
 const authRoutes = require('./routes/authRoutes');
 const calculatorRoutes = require('./routes/calculatorRoutes');
 const weatherRoutes = require('./routes/weatherRoutes');
+const adminRoutes = require('./routes/adminRoutes');
 const { seedStateData } = require('./seed/seedStateData');
 
 // Load environment variables
@@ -56,6 +57,7 @@ app.get('/api/health', (req, res) => {
 app.use('/api/auth', authRoutes);
 app.use('/api/calculator', calculatorRoutes);
 app.use('/api/weather', weatherRoutes);
+app.use('/api/admin', adminRoutes);
 
 // 404 Handler
 app.use((req, res) => {
