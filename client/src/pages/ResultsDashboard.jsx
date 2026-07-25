@@ -1,5 +1,6 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useLocation, useNavigate, Link } from 'react-router-dom';
+import axios from 'axios';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   Sun,
@@ -48,11 +49,15 @@ import {
   ResponsiveContainer,
   Legend,
 } from 'recharts';
+import BatteryRecommendation from '../components/battery/BatteryRecommendation';
+import PanelComparison from '../components/panels/PanelComparison';
 import Navbar from '../components/Navbar';
 import Footer from '../components/Footer';
 import CitySolarMap from '../components/CitySolarMap';
 import WeatherCard from '../components/WeatherCard';
 import { useAuth } from '../context/AuthContext';
+
+const API_URL = import.meta.env.VITE_API_URL || '';
 
 export default function ResultsDashboard() {
   const location = useLocation();
@@ -183,10 +188,8 @@ export default function ResultsDashboard() {
 
   // 3. Environmental Impact Comparison Bar Chart Data
   const envBarData = [
-    { metric: 'CO2 Saved (Tons)', value: report.environmental.annualCo2SavedTons, color: '#10b981' },
-    { metric: 'Trees Planted', value: report.environmental.treesEquivalent, color: '#059669' },
-    { metric: 'Coal Avoided (×10 kg)', value: Math.round(report.environmental.coalAvoidedKg / 10), color: '#ef4444' },
-    { metric: 'Cars Removed', value: Number(report.environmental.carsRemovedEquivalent) * 10, color: '#0d9488' },
+    { metric: 'CO2 Saved (Tons/Yr)', value: report.environmental.annualCo2SavedTons, color: '#10b981' },
+    { metric: 'Coal Avoided (Tons/Yr)', value: Number((report.environmental.coalAvoidedKg / 1000).toFixed(2)), color: '#ef4444' },
   ];
 
   // AI Recommendation Engine Generator
@@ -239,6 +242,40 @@ export default function ResultsDashboard() {
       setReportSaved(true);
     }, 800);
   };
+
+  const [batteryData, setBatteryData] = useState(null);
+  const [panelData, setPanelData] = useState(null);
+
+  useEffect(() => {
+    if (report && report.system) {
+      axios
+        .post(`${API_URL}/api/battery/recommend`, {
+          systemCapacityKw: report.system.recommendedKw,
+          backupHours: report.inputs.backupHours || '6 Hours',
+          batteryBudget: report.inputs.batteryBudget || 'Standard',
+          batteryPriority: report.inputs.batteryPriority || 'Backup During Power Cuts',
+          city: report.inputs.city,
+          state: report.inputs.state,
+        })
+        .then((res) => {
+          if (res.data.success) setBatteryData(res.data);
+        })
+        .catch((err) => console.warn('Battery fetch error:', err));
+
+      axios
+        .post(`${API_URL}/api/panels/recommend`, {
+          systemCapacityKw: report.system.recommendedKw,
+          panelBudget: report.inputs.panelBudget || 'Mid-Range',
+          panelPriority: report.inputs.panelPriority || 'Balanced Choice',
+          climate: report.inputs.climate || 'Normal',
+          city: report.inputs.city,
+        })
+        .then((res) => {
+          if (res.data.success) setPanelData(res.data);
+        })
+        .catch((err) => console.warn('Panel fetch error:', err));
+    }
+  }, [report]);
 
   // Loading State UI
   if (isLoading) {
@@ -626,7 +663,7 @@ export default function ResultsDashboard() {
                     4. Environmental Impact Comparison
                   </h3>
                   <p className="text-xs text-slate-500 dark:text-slate-400">
-                    Comparative metrics for CO2 reduction, trees planted, and coal avoided.
+                    Comparative annual metrics for CO2 reduction and thermal coal avoided.
                   </p>
                 </div>
                 <Leaf className="w-5 h-5 text-emerald-500" />
@@ -653,6 +690,12 @@ export default function ResultsDashboard() {
             </motion.div>
 
           </div>
+
+          {/* Phase 11: Tier-1 Solar Panel Brand Comparison Matrix */}
+          <PanelComparison panelData={panelData} />
+
+          {/* Phase 10: AI Battery Storage Recommendation System */}
+          <BatteryRecommendation batteryData={batteryData} />
 
           {/* Installer Discovery Call To Action */}
           <div className="glass-card rounded-3xl p-8 border border-amber-500/30 bg-gradient-to-r from-emerald-900 via-teal-900 to-slate-900 text-white flex flex-col md:flex-row items-center justify-between gap-6 shadow-2xl">

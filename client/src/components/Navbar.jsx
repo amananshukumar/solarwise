@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Link, useLocation } from 'react-router-dom';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { Sun, Moon, Menu, X, User, LogOut, ChevronRight, Calculator, LayoutDashboard, ShieldCheck } from 'lucide-react';
 import { useTheme } from '../context/ThemeContext';
 import { useAuth } from '../context/AuthContext';
@@ -9,8 +9,15 @@ export default function Navbar() {
   const { user, logout, openAuthModal } = useAuth();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const location = useLocation();
+  const navigate = useNavigate();
 
   const isAdmin = user && (user.role === 'admin' || user.email === 'demo@solarwise.in' || user.email === 'admin@solarwise.in');
+
+  const handleLogout = () => {
+    logout();
+    navigate('/');
+    if (mobileMenuOpen) setMobileMenuOpen(false);
+  };
 
   return (
     <header className="sticky top-0 z-40 w-full glass-nav transition-all duration-300">
@@ -92,7 +99,7 @@ export default function Navbar() {
                 </span>
               </Link>
               <button
-                onClick={logout}
+                onClick={handleLogout}
                 className="p-2 rounded-xl text-slate-500 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-950/30 transition-all"
                 title="Logout"
               >
@@ -189,10 +196,7 @@ export default function Navbar() {
               <div className="flex items-center justify-between">
                 <span className="font-semibold text-emerald-600">{user.name}</span>
                 <button
-                  onClick={() => {
-                    logout();
-                    setMobileMenuOpen(false);
-                  }}
+                  onClick={handleLogout}
                   className="px-4 py-2 bg-red-100 dark:bg-red-950/40 text-red-600 rounded-lg text-sm font-semibold"
                 >
                   Logout

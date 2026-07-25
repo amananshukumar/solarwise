@@ -11,6 +11,7 @@ import SolarSavingsCTA from './components/SolarSavingsCTA';
 import FAQ from './components/FAQ';
 import Footer from './components/Footer';
 import AuthModal from './components/AuthModal';
+import ChatBot from './components/chat/ChatBot';
 import { PageSpinner } from './components/SkeletonLoader';
 
 // Lazy Loaded Page Components for Code-Splitting & Performance
@@ -51,6 +52,8 @@ export default function App() {
               <Route path="*" element={<NotFoundPage />} />
             </Routes>
           </Suspense>
+          {/* Floating AI Solar Assistant Chatbot */}
+          <ChatBot />
         </Router>
       </AuthProvider>
     </ThemeProvider>

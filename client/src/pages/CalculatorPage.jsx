@@ -10,6 +10,7 @@ import {
   Layers,
   Info,
   Building,
+  BatteryCharging,
 } from 'lucide-react';
 import Navbar from '../components/Navbar';
 import Footer from '../components/Footer';
@@ -331,8 +332,83 @@ export default function CalculatorPage() {
                   <div className="p-4 rounded-xl bg-slate-100 dark:bg-slate-800/60 border border-slate-200 dark:border-slate-700 text-xs text-slate-600 dark:text-slate-300 flex items-center gap-3">
                     <Info className="w-5 h-5 text-amber-500 shrink-0" />
                     <span>
-                      Submitting this form executes the backend calculation engine and redirects to your interactive Phase 4 Results Dashboard.
+                      Submitting this form executes the backend calculation engine, battery recommendation, and panel brand comparison matrices.
                     </span>
+                  </div>
+                </div>
+              </div>
+
+              {/* Section 4: Battery Storage & Panel Brand Preferences (Phases 10 & 11) */}
+              <div className="space-y-4">
+                <div className="flex items-center gap-2 border-b border-slate-200 dark:border-slate-800 pb-3">
+                  <BatteryCharging className="w-5 h-5 text-amber-500" />
+                  <h3 className="text-lg font-extrabold text-slate-900 dark:text-white">
+                    4. Battery Storage & Panel Preferences (Optional)
+                  </h3>
+                </div>
+
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+                  {/* Want Battery Toggle */}
+                  <div className="space-y-1">
+                    <label className="text-xs font-bold text-slate-700 dark:text-slate-300">
+                      Include Battery Backup?
+                    </label>
+                    <select
+                      {...register('wantBattery')}
+                      className="w-full px-4 py-3 rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white font-semibold text-sm focus:ring-2 focus:ring-emerald-500 outline-none"
+                    >
+                      <option value="No">No (Grid-Tied Net Metered Only)</option>
+                      <option value="Yes">Yes (Hybrid Battery Backup)</option>
+                    </select>
+                  </div>
+
+                  {/* Backup Required */}
+                  <div className="space-y-1">
+                    <label className="text-xs font-bold text-slate-700 dark:text-slate-300">
+                      Desired Backup Duration
+                    </label>
+                    <select
+                      {...register('backupHours')}
+                      className="w-full px-4 py-3 rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white font-semibold text-sm focus:ring-2 focus:ring-emerald-500 outline-none"
+                    >
+                      <option value="2 Hours">2 Hours Essential Backup</option>
+                      <option value="4 Hours">4 Hours Standard Backup</option>
+                      <option value="6 Hours">6 Hours Extended Backup</option>
+                      <option value="8 Hours">8 Hours Night Backup</option>
+                      <option value="Full Night">Full Night (10+ Hours)</option>
+                    </select>
+                  </div>
+
+                  {/* Panel Brand Priority */}
+                  <div className="space-y-1">
+                    <label className="text-xs font-bold text-slate-700 dark:text-slate-300">
+                      Panel Selection Priority
+                    </label>
+                    <select
+                      {...register('panelPriority')}
+                      className="w-full px-4 py-3 rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white font-semibold text-sm focus:ring-2 focus:ring-emerald-500 outline-none"
+                    >
+                      <option value="Balanced Choice">Balanced Best Overall</option>
+                      <option value="Lowest Cost">Lowest Upfront Cost</option>
+                      <option value="Highest Efficiency">Highest Efficiency (%)</option>
+                      <option value="Longest Warranty">Longest 30-Yr Warranty</option>
+                    </select>
+                  </div>
+
+                  {/* Climate Zone */}
+                  <div className="space-y-1">
+                    <label className="text-xs font-bold text-slate-700 dark:text-slate-300">
+                      Local Climate Environment
+                    </label>
+                    <select
+                      {...register('climate')}
+                      className="w-full px-4 py-3 rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white font-semibold text-sm focus:ring-2 focus:ring-emerald-500 outline-none"
+                    >
+                      <option value="Normal">Normal Inland Climate</option>
+                      <option value="Hot Climate">Hot Summer Climate (&gt;40°C)</option>
+                      <option value="Coastal">Coastal / High Salt Spray</option>
+                      <option value="Humid">Humid Monsoon Zone</option>
+                    </select>
                   </div>
                 </div>
               </div>

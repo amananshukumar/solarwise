@@ -1,10 +1,10 @@
 # ☀️ SolarWise India — MERN Clean Energy & Rooftop Solar Platform
 
-> **Production-Ready MERN Stack Application** engineered for Indian homeowners, commercial users, and clean energy enthusiasts to compute rooftop solar feasibility, calculate Direct Benefit Transfer (DBT) subsidies under **PM Surya Ghar Muft Bijli Yojana**, visualize 25-year financial ROI, and connect with DISCOM-approved installers.
+> **Production-Ready MERN Stack Application** engineered for Indian homeowners, commercial users, and clean energy enthusiasts to compute rooftop solar feasibility, calculate Direct Benefit Transfer (DBT) subsidies under **PM Surya Ghar Muft Bijli Yojana**, visualize 25-year financial ROI, chat with **SolarWise AI Assistant** (powered by Google Gemini API), and connect with DISCOM-approved installers.
 
 ---
 
-## 🚀 Key Features across 8 Phases
+## 🚀 Key Features across 9 Phases
 
 1. **Authentication & MVC Backend (Phase 1)**:
    - Node.js + Express backend following strict MVC pattern.
@@ -21,8 +21,8 @@
 
 3. **Interactive Results Dashboard (Phase 4)**:
    - **4 Recharts Visualizations**:
-     - 📈 **Savings Over Time (Line Chart)**: 25-Year compounding savings curve factoring 5% annual DISCOM tariff escalation.
-     - 🥧 **Investment & Subsidy Breakdown (Pie Chart)**: PM Surya Ghar Subsidy vs Net Out-of-Pocket Cost.
+     - 📈 **Savings Over Time (Line Chart)**: 25-Year compounding savings curve.
+     - 🥧 **Investment & Subsidy Breakdown (Pie Chart)**: PM Surya Ghar Subsidy vs Net Cost.
      - ☀️ **12-Month Solar Power Generation Profile (Area Chart)**: Seasonal kWh power production profile.
      - 📊 **Environmental Impact Comparison (Bar Chart)**: Comparative metrics for $CO_2$ saved, trees planted, and coal avoided.
    - AI Smart Solar Recommendations Engine.
@@ -48,48 +48,27 @@
    - Reusable shimmer skeleton loaders and toast notification banners.
    - Eco-styled 404 Not Found page.
 
+8. **AI Solar Assistant — Google Gemini API (Phase 9)**:
+   - Floating chatbot drawer at the bottom-right corner of every page (`ChatBot.jsx`).
+   - Powered by official `@google/genai` SDK and `gemini-3.6-flash` model.
+   - **Context Awareness**: Automatically attaches user calculation metrics (*terrace area, plant capacity kW, city, state, annual savings, subsidy*) for personalized recommendations.
+
+9. **AI Battery Storage Recommendation System (Phase 10)**:
+   - Evaluates system capacity, required backup hours (2h, 4h, 6h, 8h, full night), DoD %, and budget.
+   - Recommends Tier-1 LiFePO₄ (LFP) / NMC battery storage units (Luminous, Exide, Microtek, Livguard, Tesla).
+   - Computes replacement year, round-trip efficiency (95%), extra peak shaving savings ₹, and AI recommendation text.
+
+10. **Solar Panel Brand Comparison System (Phase 11)**:
+    - Multi-criteria scoring engine ranking Tier-1 Indian and global solar panel manufacturers (Tata Power Solar, Waaree, Adani, Vikram, LONGi, JinkoSolar).
+    - Side-by-side comparison table matrix, cost per watt (₹/W), efficiency %, temperature coefficient, and 25–30 year performance warranties.
+
 ---
 
 ## 🛠️ Technology Stack
 
-- **Frontend**: React (Vite), Tailwind CSS (v4), Framer Motion, Lucide Icons, Recharts, Leaflet.js, React-Leaflet, React Hook Form, Axios, React Router DOM.
-- **Backend**: Node.js, Express.js (MVC Pattern), Mongoose ORM, MongoDB Atlas, JSON Web Token (JWT), bcryptjs, CORS, dotenv.
-- **Third-Party Open APIs**: OpenStreetMap (Tiles), Open-Meteo API (Free Weather & Sunshine Duration).
-
----
-
-## 📁 Directory Structure
-
-```text
-solarwise-india/
-├── client/                     # Vite React Frontend
-│   ├── src/
-│   │   ├── components/         # Reusable UI (Navbar, Footer, Hero, Features, Maps, Weather, Toasts, Skeletons)
-│   │   ├── context/            # AuthContext, ThemeContext
-│   │   ├── pages/              # CalculatorPage, ResultsDashboard, UserDashboard, AdminPanel, NotFoundPage
-│   │   ├── utils/              # pdfGenerator.js
-│   │   ├── App.jsx             # React Router with React.lazy code-splitting
-│   │   ├── main.jsx
-│   │   └── index.css           # Eco-theme design tokens & glassmorphism
-│   ├── vite.config.js
-│   └── vercel.json             # Vercel SPA routing rewrite config
-│
-├── server/                     # Express Node.js Backend (MVC)
-│   ├── src/
-│   │   ├── config/             # db.js (Mongoose MongoDB connection)
-│   │   ├── controllers/        # authController, calculatorController, weatherController, adminController
-│   │   ├── middleware/         # authMiddleware, adminMiddleware
-│   │   ├── models/             # User, StateData, CalculationResult
-│   │   ├── routes/             # authRoutes, calculatorRoutes, weatherRoutes, adminRoutes
-│   │   ├── seed/               # seedStateData.js (10 Indian states & city coordinates)
-│   │   ├── services/           # calculateSolar.js, weatherService.js (Open-Meteo + 1-hr Cache)
-│   │   └── index.js            # Main Express Server Entry
-│   ├── render.yaml             # Render service deployment manifest
-│   └── .env.example
-│
-├── package.json                # Monorepo root helper scripts
-└── README.md
-```
+- **Frontend**: React (Vite), Tailwind CSS (v4), Framer Motion, Lucide Icons, Recharts, Leaflet.js, React-Leaflet, React Markdown, React Hook Form, Axios, React Router DOM.
+- **Backend**: Node.js, Express.js (MVC Pattern), `@google/genai` SDK, Mongoose ORM, MongoDB Atlas, JSON Web Token (JWT), bcryptjs, CORS, dotenv.
+- **Third-Party Open APIs**: Google Gemini API (`gemini-2.5-flash`), OpenStreetMap (Tiles), Open-Meteo API (Free Weather & Sunshine Duration).
 
 ---
 
@@ -102,6 +81,7 @@ MONGO_URI=mongodb://127.0.0.1:27017/solarwise_india
 JWT_SECRET=solarwise_super_secret_jwt_key_2026_india
 NODE_ENV=development
 CLIENT_ORIGIN=http://localhost:5173
+GEMINI_API_KEY=your_google_gemini_api_key_here
 ```
 
 ### Frontend (`client/.env`)
@@ -111,45 +91,10 @@ VITE_API_URL=http://localhost:5000
 
 ---
 
-## ⚡ Quick Start & Local Setup
-
-### 1. Clone & Install Dependencies
-From root directory:
-```bash
-# Install root, backend, and frontend packages concurrently
-npm run install:all
-```
-
-Or manually:
-```bash
-cd server && npm install
-cd ../client && npm install
-```
-
-### 2. Start Development Servers
-From root directory:
-```bash
-# Terminal 1: Start Backend (Port 5000)
-npm run server
-
-# Terminal 2: Start Frontend (Port 5173)
-npm run client
-```
-
-Open `http://localhost:5173` in your browser.
-
----
-
-## 🔑 Demo Access Credentials
-
-- **One-Click Demo Login**: Click "One-Click Instant Demo Login (Rajesh Sharma)" inside the Sign In modal.
-- **Demo User Email**: `demo@solarwise.in`
-- **Demo User Password**: `solar123`
-- **Admin Access**: Logged in as `demo@solarwise.in` or `admin@solarwise.in` grants access to `/admin`.
-
----
-
 ## 📡 API Endpoints Documentation
+
+### AI Chatbot (`/api/chat`)
+- `POST /api/chat` — Submit query (`message`) with optional `calculationContext` object. Returns AI response powered by Gemini API.
 
 ### Authentication (`/api/auth`)
 - `POST /api/auth/register` — Register new user (`name`, `email`, `password`, `state`, `monthlyBill`).
@@ -174,25 +119,18 @@ Open `http://localhost:5173` in your browser.
 
 ---
 
-## 🚀 Deployment Guide
+## ⚡ Quick Start & Local Setup
 
-### Deploying Frontend to Vercel
-1. Connect your repository to [Vercel](https://vercel.com).
-2. Set **Root Directory** to `client`.
-3. Set **Build Command** to `npm run build` and **Output Directory** to `dist`.
-4. Add Environment Variable `VITE_API_URL` pointing to your deployed Render API URL.
-5. Deploy! (Single-page app rewrites are pre-configured in `client/vercel.json`).
+```bash
+# 1. Install root, backend, and frontend dependencies
+npm run install:all
 
-### Deploying Backend to Render
-1. Create a new **Web Service** on [Render](https://render.com).
-2. Set **Root Directory** to `server`.
-3. Set **Build Command** to `npm install`.
-4. Set **Start Command** to `node src/index.js`.
-5. Add Environment Variables:
-   - `MONGO_URI`: Your MongoDB Atlas connection URI.
-   - `JWT_SECRET`: Secret string for token signing.
-   - `CLIENT_ORIGIN`: Your deployed Vercel frontend URL.
-6. Deploy!
+# 2. Start Backend & Frontend servers concurrently
+npm run server  # Terminal 1 (Port 5000)
+npm run client  # Terminal 2 (Port 5173)
+```
+
+Open `http://localhost:5173` in your browser.
 
 ---
 

@@ -6,7 +6,11 @@ const authRoutes = require('./routes/authRoutes');
 const calculatorRoutes = require('./routes/calculatorRoutes');
 const weatherRoutes = require('./routes/weatherRoutes');
 const adminRoutes = require('./routes/adminRoutes');
+const chatRoutes = require('./routes/chatRoutes');
+const batteryRoutes = require('./routes/batteryRoutes');
+const panelRoutes = require('./routes/panelRoutes');
 const { seedStateData } = require('./seed/seedStateData');
+const { seedBatteriesAndPanels } = require('./seed/seedBatteriesAndPanels');
 
 // Load environment variables
 dotenv.config();
@@ -14,6 +18,7 @@ dotenv.config();
 // Connect to Database & Seed Initial State Data
 connectDB().then(() => {
   seedStateData();
+  seedBatteriesAndPanels();
 });
 
 const app = express();
@@ -58,6 +63,9 @@ app.use('/api/auth', authRoutes);
 app.use('/api/calculator', calculatorRoutes);
 app.use('/api/weather', weatherRoutes);
 app.use('/api/admin', adminRoutes);
+app.use('/api/chat', chatRoutes);
+app.use('/api/battery', batteryRoutes);
+app.use('/api/panels', panelRoutes);
 
 // 404 Handler
 app.use((req, res) => {
