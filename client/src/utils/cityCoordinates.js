@@ -130,7 +130,7 @@ export function getCityCoordinates(cityName = '') {
     }
   }
 
-  // Dynamic hash fallback to generate a deterministic valid coordinate in India (lat 12-28, lng 72-88)
+  // Dynamic hash fallback to generate a deterministic valid coordinate in India
   let hash = 0;
   for (let i = 0; i < key.length; i++) {
     hash = key.charCodeAt(i) + ((hash << 5) - hash);
@@ -141,5 +141,100 @@ export function getCityCoordinates(cityName = '') {
   return {
     lat: Number(lat.toFixed(4)),
     lng: Number(lng.toFixed(4)),
+  };
+}
+
+/**
+ * Haversine distance in KM between two points
+ */
+export function getDistanceKm(lat1, lon1, lat2, lon2) {
+  const R = 6371;
+  const dLat = (lat2 - lat1) * (Math.PI / 180);
+  const dLon = (lon2 - lon1) * (Math.PI / 180);
+  const a =
+    Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+    Math.cos(lat1 * (Math.PI / 180)) *
+      Math.cos(lat2 * (Math.PI / 180)) *
+      Math.sin(dLon / 2) *
+      Math.sin(dLon / 2);
+  const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+  return R * c;
+}
+
+/**
+ * Reverse Geocode Coordinates to DB State & City
+ * Returns { success: true, city, state } OR { success: false, message: "sorry no data available for city" }
+ */
+export function findCityByCoordinates(lat, lng, dbLocationData = []) {
+  let bestMatch = null;
+  let minDistance = Infinity;
+
+  // 1. Search database location data first
+  if (Array.isArray(dbLocationData) && dbLocationData.length > 0) {
+    for (const stateObj of dbLocationData) {
+      if (stateObj.cityDetails && Array.isArray(stateObj.cityDetails)) {
+        for (const cityObj of stateObj.cityDetails) {
+          const dist = getDistanceKm(lat, lng, cityObj.lat, cityObj.lng);
+          if (dist < minDistance) {
+            minDistance = dist;
+            bestMatch = { city: cityObj.name, state: stateObj.stateName };
+          }
+        }
+      }
+    }
+  }
+
+  // 2. Search fallback INDIAN_CITY_MAP
+  const knownCities = [
+    { city: 'Patna', state: 'Bihar', lat: 25.5941, lng: 85.1376 },
+    { city: 'Gaya', state: 'Bihar', lat: 24.7955, lng: 85.0002 },
+    { city: 'Muzaffarpur', state: 'Bihar', lat: 26.1209, lng: 85.3647 },
+    { city: 'Bhagalpur', state: 'Bihar', lat: 25.2425, lng: 87.0124 },
+    { city: 'Darbhanga', state: 'Bihar', lat: 26.1542, lng: 85.8918 },
+    { city: 'Purnia', state: 'Bihar', lat: 25.7771, lng: 87.4753 },
+    { city: 'Mumbai', state: 'Maharashtra', lat: 19.0760, lng: 72.8777 },
+    { city: 'Pune', state: 'Maharashtra', lat: 18.5204, lng: 73.8567 },
+    { city: 'Nagpur', state: 'Maharashtra', lat: 21.1458, lng: 79.0882 },
+    { city: 'Nashik', state: 'Maharashtra', lat: 20.0059, lng: 73.7898 },
+    { city: 'Ahmedabad', state: 'Gujarat', lat: 23.0225, lng: 72.5714 },
+    { city: 'Surat', state: 'Gujarat', lat: 21.1702, lng: 72.8311 },
+    { city: 'Vadodara', state: 'Gujarat', lat: 22.3072, lng: 73.1812 },
+    { city: 'Delhi', state: 'Delhi', lat: 28.6139, lng: 77.2090 },
+    { city: 'Kolkata', state: 'West Bengal', lat: 22.5726, lng: 88.3639 },
+    { city: 'Bengaluru', state: 'Karnataka', lat: 12.9716, lng: 77.5946 },
+    { city: 'Lucknow', state: 'Uttar Pradesh', lat: 26.8467, lng: 80.9462 },
+    { city: 'Jaipur', state: 'Rajasthan', lat: 26.9124, lng: 75.7873 },
+    { city: 'Chennai', state: 'Tamil Nadu', lat: 13.0827, lng: 80.2707 },
+    { city: 'Hyderabad', state: 'Telangana', lat: 17.3850, lng: 78.4867 },
+    { city: 'Thiruvananthapuram', state: 'Kerala', lat: 8.5241, lng: 76.9366 },
+    { city: 'Kochi', state: 'Kerala', lat: 9.9312, lng: 76.2673 },
+    { city: 'Bhopal', state: 'Madhya Pradesh', lat: 23.2599, lng: 77.4126 },
+    { city: 'Indore', state: 'Madhya Pradesh', lat: 22.7196, lng: 75.8577 },
+    { city: 'Bhubaneswar', state: 'Odisha', lat: 20.2961, lng: 85.8245 },
+    { city: 'Ranchi', state: 'Jharkhand', lat: 23.3441, lng: 85.3096 },
+    { city: 'Guwahati', state: 'Assam', lat: 26.1445, lng: 91.7362 },
+  ];
+
+  for (const c of knownCities) {
+    const dist = getDistanceKm(lat, lng, c.lat, c.lng);
+    if (dist < minDistance) {
+      minDistance = dist;
+      bestMatch = { city: c.city, state: c.state };
+    }
+  }
+
+  // Threshold: Max 75 km proximity to consider a city "available in database"
+  if (bestMatch && minDistance <= 75) {
+    return {
+      success: true,
+      city: bestMatch.city,
+      state: bestMatch.state,
+      distanceKm: Number(minDistance.toFixed(1)),
+    };
+  }
+
+  return {
+    success: false,
+    message: 'sorry no data available for city',
   };
 }

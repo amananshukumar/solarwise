@@ -12,6 +12,8 @@ const panelRoutes = require('./routes/panelRoutes');
 const { seedStateData } = require('./seed/seedStateData');
 const { seedBatteriesAndPanels } = require('./seed/seedBatteriesAndPanels');
 
+const roofRoutes = require('./routes/roofRoutes');
+
 // Load environment variables
 dotenv.config();
 
@@ -23,9 +25,9 @@ connectDB().then(() => {
 
 const app = express();
 
-// Middleware
-app.use(express.json());
-app.use(express.urlencoded({ extended: true }));
+// Middleware - supports up to 20mb payload for satellite images
+app.use(express.json({ limit: '20mb' }));
+app.use(express.urlencoded({ limit: '20mb', extended: true }));
 
 // CORS configuration
 const allowedOrigins = [
@@ -66,6 +68,7 @@ app.use('/api/admin', adminRoutes);
 app.use('/api/chat', chatRoutes);
 app.use('/api/battery', batteryRoutes);
 app.use('/api/panels', panelRoutes);
+app.use('/api/roof', roofRoutes);
 
 // 404 Handler
 app.use((req, res) => {

@@ -14,9 +14,23 @@ import {
   Sun,
   ShieldCheck,
   CheckCircle2,
+  Camera,
+  MapPin,
+  RefreshCw,
+  AlertTriangle,
 } from 'lucide-react';
 import Navbar from '../components/Navbar';
 import Footer from '../components/Footer';
+import { findCityByCoordinates } from '../utils/cityCoordinates';
+
+// Phase 13 AI Roof Analysis Components
+import RoofAnalysisButton from '../components/roof/RoofAnalysisButton';
+import LocationPermissionModal from '../components/roof/LocationPermissionModal';
+import RoofLocationMap from '../components/roof/RoofLocationMap';
+import SatelliteInstructions from '../components/roof/SatelliteInstructions';
+import ScreenshotUploader from '../components/roof/ScreenshotUploader';
+import RoofAnalysisLoader from '../components/roof/RoofAnalysisLoader';
+import RoofAnalysisResults from '../components/roof/RoofAnalysisResults';
 
 const API_URL = import.meta.env.VITE_API_URL || '';
 
@@ -27,6 +41,15 @@ export default function CalculatorPage() {
   const [citiesList, setCitiesList] = useState(['Mumbai', 'Pune', 'Nagpur', 'Nashik']);
   const [calculating, setCalculating] = useState(false);
   const [errorMsg, setErrorMsg] = useState('');
+
+  // Phase 13 AI Roof Analysis States
+  const [showGpsModal, setShowGpsModal] = useState(false);
+  const [userCoords, setUserCoords] = useState({ lat: 25.5941, lng: 85.1376 }); // Patna default
+  const [gpsError, setGpsError] = useState('');
+  const [roofStep, setRoofStep] = useState('idle'); // idle | map | instructions | analyzing | results
+  const [aiRoofData, setAiRoofData] = useState(null);
+  const [uploadedPreviewUrl, setUploadedPreviewUrl] = useState('');
+  const [aiNotice, setAiNotice] = useState('');
 
   const {
     register,
@@ -93,14 +116,116 @@ export default function CalculatorPage() {
     }
   }, [stateWatch, locationData, setValue]);
 
+  // Phase 13 GPS Permission Trigger
+  const handleStartRoofAnalysis = () => {
+    setGpsError('');
+    setShowGpsModal(true);
+  };
+
+  const applyGpsCoordinatesToForm = (lat, lng) => {
+    const match = findCityByCoordinates(lat, lng, locationData);
+    if (match.success) {
+      setValue('state', match.state);
+      setTimeout(() => {
+        setValue('city', match.city);
+        const stateObj = locationData.find((s) => s.stateName === match.state);
+        if (stateObj && stateObj.defaultRatePerKwh) {
+          setValue('electricityRate', stateObj.defaultRatePerKwh);
+        }
+      }, 50);
+      setAiNotice(`✨ GPS Location detected: ${match.city}, ${match.state} auto-filled!`);
+      setErrorMsg('');
+    } else {
+      setErrorMsg('sorry no data available for city');
+      setAiNotice('');
+    }
+  };
+
+  const handleRequestGPS = () => {
+    setGpsError('');
+    if (!navigator.geolocation) {
+      setGpsError('Geolocation is not supported by your browser. Using interactive map selection.');
+      setShowGpsModal(false);
+      setRoofStep('map');
+      return;
+    }
+
+    navigator.geolocation.getCurrentPosition(
+      (pos) => {
+        const lat = pos.coords.latitude;
+        const lng = pos.coords.longitude;
+        setUserCoords({ lat, lng });
+        setShowGpsModal(false);
+        setRoofStep('map');
+        applyGpsCoordinatesToForm(lat, lng);
+      },
+      (err) => {
+        let msg = 'Could not retrieve GPS location.';
+        if (err.code === 1) msg = 'GPS Permission Denied. Drag the marker on map to locate your rooftop.';
+        else if (err.code === 2) msg = 'Location unavailable. Position marker manually on the map.';
+        else if (err.code === 3) msg = 'Location request timed out. Position marker manually on the map.';
+        setGpsError(msg);
+        setShowGpsModal(false);
+        setRoofStep('map');
+      },
+      { timeout: 10000, enableHighAccuracy: true }
+    );
+  };
+
+  const handleConfirmMapPosition = (lat, lng) => {
+    setUserCoords({ lat, lng });
+    setRoofStep('instructions');
+    applyGpsCoordinatesToForm(lat, lng);
+  };
+
+  const handleAnalyzeImage = async (base64Data, mimeType) => {
+    try {
+      setRoofStep('analyzing');
+      const res = await axios.post(`${API_URL}/api/roof/analyze`, {
+        imageBase64: base64Data,
+        mimeType,
+        latitude: userCoords.lat,
+        longitude: userCoords.lng,
+      });
+
+      if (res.data.success) {
+        const analysis = res.data.data;
+        setAiRoofData(analysis);
+        setRoofStep('results');
+
+        // Auto-fill calculator values
+        if (analysis.roofType) {
+          const typeLower = analysis.roofType.toLowerCase();
+          if (typeLower.includes('metal') || typeLower.includes('sheet')) setValue('roofType', 'Metal');
+          else if (typeLower.includes('tile')) setValue('roofType', 'Tile');
+          else setValue('roofType', 'RCC');
+        }
+
+        if (analysis.shadeLevel) {
+          setValue('shadowLevel', analysis.shadeLevel);
+        }
+
+        applyGpsCoordinatesToForm(userCoords.lat, userCoords.lng);
+      } else {
+        setErrorMsg(res.data.message || 'AI rooftop analysis failed');
+        setRoofStep('instructions');
+      }
+    } catch (err) {
+      console.error('AI Roof Error:', err);
+      setErrorMsg(err.response?.data?.message || 'Server error during rooftop AI analysis');
+      setRoofStep('instructions');
+    }
+  };
+
   // Form Submit Handler -> Sends inputs to backend & navigates to /results
   const onSubmit = async (data) => {
     try {
       setCalculating(true);
       setErrorMsg('');
-      const res = await axios.post(`${API_URL}/api/calculator/calculate`, data);
+      const payload = { ...data, aiRoofAnalysis: aiRoofData };
+      const res = await axios.post(`${API_URL}/api/calculator/calculate`, payload);
       if (res.data.success) {
-        navigate('/results', { state: { reportData: res.data.data } });
+        navigate('/results', { state: { reportData: { ...res.data.data, aiRoofAnalysis: aiRoofData, satellitePreview: uploadedPreviewUrl } } });
       } else {
         setErrorMsg(res.data.message || 'Calculation failed');
       }
@@ -122,15 +247,89 @@ export default function CalculatorPage() {
           <div className="text-center max-w-3xl mx-auto space-y-4">
             <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-emerald-100 dark:bg-emerald-950/60 border border-emerald-500/30 text-emerald-800 dark:text-emerald-300 text-xs font-bold uppercase tracking-wider">
               <Sparkles className="w-4 h-4 text-amber-500" />
-              <span>Phase 4 Solar Engine • Interactive Dashboard Generator</span>
+              <span>Phase 13 AI Engine • GPS & Gemini Vision Rooftop Scanner</span>
             </div>
             <h1 className="text-3xl sm:text-5xl font-black text-slate-900 dark:text-white tracking-tight">
               Solar Feasibility & ROI Calculator
             </h1>
             <p className="text-slate-700 dark:text-slate-300 text-base sm:text-lg leading-relaxed font-medium">
-              Enter your terrace dimensions and monthly electricity bill below. Our calculation engine will compute system size, PM Surya Ghar subsidy, 25-year financial projections, and Tier-1 brand options.
+              Enter your terrace dimensions or use our <strong>Gemini Vision AI Satellite Scanner</strong> to detect rooftop area, obstacles, and solar potential automatically!
             </p>
+
+            {/* Phase 13 Trigger Button */}
+            <div className="pt-2 flex justify-center">
+              <RoofAnalysisButton onClick={handleStartRoofAnalysis} />
+            </div>
           </div>
+
+          {/* Phase 13 Interactive Roof Module Steps */}
+          {roofStep !== 'idle' && (
+            <div className="glass-card rounded-3xl p-6 sm:p-8 border-2 border-emerald-500/40 bg-white dark:bg-slate-900 shadow-2xl space-y-6">
+              <div className="flex items-center justify-between border-b border-slate-200 dark:border-slate-800 pb-4">
+                <div className="flex items-center gap-2">
+                  <Camera className="w-5 h-5 text-amber-500" />
+                  <h3 className="text-xl font-extrabold text-slate-950 dark:text-white">
+                    AI Satellite Rooftop Scanner
+                  </h3>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => setRoofStep('idle')}
+                  className="text-xs font-bold text-slate-500 hover:text-slate-800 dark:hover:text-slate-200"
+                >
+                  Close AI Module ×
+                </button>
+              </div>
+
+              {roofStep === 'map' && (
+                <RoofLocationMap
+                  lat={userCoords.lat}
+                  lng={userCoords.lng}
+                  onConfirmPosition={handleConfirmMapPosition}
+                />
+              )}
+
+              {roofStep === 'instructions' && (
+                <div className="space-y-6">
+                  <SatelliteInstructions lat={userCoords.lat} lng={userCoords.lng} />
+                  <ScreenshotUploader
+                    onImageSelected={({ previewUrl }) => setUploadedPreviewUrl(previewUrl)}
+                    onAnalyze={handleAnalyzeImage}
+                    isAnalyzing={false}
+                  />
+                </div>
+              )}
+
+              {roofStep === 'analyzing' && <RoofAnalysisLoader />}
+
+              {roofStep === 'results' && aiRoofData && (
+                <RoofAnalysisResults
+                  data={aiRoofData}
+                  previewUrl={uploadedPreviewUrl}
+                  onApplyToCalculator={() => {
+                    setAiNotice('AI values applied to your form below!');
+                  }}
+                />
+              )}
+            </div>
+          )}
+
+          {/* AI Auto-fill Notice Banner */}
+          {aiNotice && (
+            <div className="p-4 rounded-2xl bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-300 dark:border-emerald-800 text-emerald-900 dark:text-emerald-200 text-xs sm:text-sm font-bold flex items-center justify-between gap-3 shadow-sm">
+              <div className="flex items-center gap-2">
+                <CheckCircle2 className="w-5 h-5 text-emerald-500 shrink-0" />
+                <span>{aiNotice}</span>
+              </div>
+              <button
+                type="button"
+                onClick={() => setAiNotice('')}
+                className="text-xs text-emerald-700 dark:text-emerald-400 font-extrabold hover:underline"
+              >
+                Dismiss
+              </button>
+            </div>
+          )}
 
           {/* Form Card */}
           <div className="glass-card rounded-3xl p-6 sm:p-10 border border-slate-300 dark:border-slate-800 shadow-2xl relative overflow-hidden bg-white dark:bg-slate-900">
@@ -140,11 +339,18 @@ export default function CalculatorPage() {
               
               {/* Section 1: Roof & Terrace Dimensions */}
               <div className="space-y-4">
-                <div className="flex items-center gap-2 border-b border-slate-200 dark:border-slate-800 pb-3">
-                  <Building className="w-5 h-5 text-emerald-600 dark:text-emerald-400" />
-                  <h3 className="text-lg font-extrabold text-slate-900 dark:text-white">
-                    1. Terrace & Roof Dimensions
-                  </h3>
+                <div className="flex items-center justify-between border-b border-slate-200 dark:border-slate-800 pb-3">
+                  <div className="flex items-center gap-2">
+                    <Building className="w-5 h-5 text-emerald-600 dark:text-emerald-400" />
+                    <h3 className="text-lg font-extrabold text-slate-900 dark:text-white">
+                      1. Terrace & Roof Dimensions
+                    </h3>
+                  </div>
+                  {aiRoofData && (
+                    <span className="text-[11px] font-extrabold px-2.5 py-1 rounded-full bg-emerald-100 dark:bg-emerald-950/60 text-emerald-900 dark:text-emerald-300 border border-emerald-500/30">
+                      ✨ AI Estimated
+                    </span>
+                  )}
                 </div>
 
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
@@ -435,8 +641,9 @@ export default function CalculatorPage() {
 
               {/* Error Alert */}
               {errorMsg && (
-                <div className="p-4 rounded-xl bg-red-50 dark:bg-red-950/40 border border-red-200 dark:border-red-800 text-red-700 dark:text-red-300 text-sm font-semibold">
-                  {errorMsg}
+                <div className="p-4 rounded-xl bg-red-50 dark:bg-red-950/40 border border-red-200 dark:border-red-800 text-red-700 dark:text-red-300 text-sm font-bold flex items-center gap-2">
+                  <AlertTriangle className="w-5 h-5 text-red-500 shrink-0" />
+                  <span>{errorMsg}</span>
                 </div>
               )}
 
@@ -464,6 +671,14 @@ export default function CalculatorPage() {
 
         </div>
       </main>
+
+      {/* GPS Permission Modal */}
+      <LocationPermissionModal
+        isOpen={showGpsModal}
+        onClose={() => setShowGpsModal(false)}
+        onRequestGPS={handleRequestGPS}
+        gpsError={gpsError}
+      />
 
       <Footer />
     </div>

@@ -59,6 +59,7 @@ import CitySolarMap from '../components/CitySolarMap';
 import WeatherCard from '../components/WeatherCard';
 import { useAuth } from '../context/AuthContext';
 import { getCityCoordinates } from '../utils/cityCoordinates';
+import RoofAnalysisResults from '../components/roof/RoofAnalysisResults';
 
 const API_URL = import.meta.env.VITE_API_URL || '';
 
@@ -433,6 +434,14 @@ export default function ResultsDashboard() {
               />
             </div>
           </div>
+
+          {/* Phase 13 AI Roof Analysis Results (Rendered if user completed satellite scan) */}
+          {(report.aiRoofAnalysis || rawReport?.aiRoofAnalysis) && (
+            <RoofAnalysisResults
+              data={report.aiRoofAnalysis || rawReport?.aiRoofAnalysis}
+              previewUrl={location.state?.satellitePreview}
+            />
+          )}
 
           {/* Roof Suitability & Key Metric Cards Grid */}
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
