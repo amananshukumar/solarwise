@@ -21,21 +21,21 @@ export default function Hero() {
             className="lg:col-span-7 space-y-6 text-center lg:text-left"
           >
             {/* Government Scheme Badge */}
-            <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-gradient-to-r from-amber-500/10 via-emerald-500/10 to-teal-500/10 border border-emerald-500/20 text-emerald-800 dark:text-emerald-300 text-xs sm:text-sm font-semibold shadow-sm">
+            <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-emerald-100 dark:bg-emerald-950/60 border border-emerald-500/40 text-emerald-900 dark:text-emerald-300 text-xs sm:text-sm font-extrabold shadow-sm">
               <Sparkles className="w-4 h-4 text-amber-500 animate-pulse" />
               <span>PM Surya Ghar Muft Bijli Yojana — Up to ₹78,000 Subsidy</span>
             </div>
 
             {/* Main Headline */}
-            <h1 className="text-4xl sm:text-5xl lg:text-6xl font-extrabold tracking-tight leading-[1.15] text-slate-900 dark:text-slate-50">
+            <h1 className="text-4xl sm:text-5xl lg:text-6xl font-black tracking-tight leading-[1.15] text-slate-950 dark:text-white">
               Switch to Solar. <br />
-              <span className="bg-gradient-to-r from-emerald-600 via-teal-500 to-amber-500 dark:from-emerald-400 dark:via-teal-300 dark:to-amber-400 bg-clip-text text-transparent">
+              <span className="bg-gradient-to-r from-emerald-600 via-teal-600 to-amber-600 dark:from-emerald-400 dark:via-teal-300 dark:to-amber-400 bg-clip-text text-transparent">
                 Slash Electricity Bills by 90%
               </span>
             </h1>
 
             {/* Subtitle */}
-            <p className="text-base sm:text-lg text-slate-600 dark:text-slate-300 max-w-2xl mx-auto lg:mx-0 font-normal leading-relaxed">
+            <p className="text-base sm:text-lg text-slate-800 dark:text-slate-200 max-w-2xl mx-auto lg:mx-0 font-medium leading-relaxed">
               Discover your rooftop’s solar power generation potential, claim Central & State subsidies, calculate accurate 25-year financial ROI, and connect with top DISCOM-verified installers across India.
             </p>
 
@@ -43,7 +43,7 @@ export default function Hero() {
             <div className="flex flex-col sm:flex-row items-center justify-center lg:justify-start gap-4 pt-2">
               <Link
                 to="/calculator"
-                className="w-full sm:w-auto px-8 py-4 text-base font-bold text-white rounded-2xl bg-gradient-to-r from-emerald-600 via-teal-600 to-emerald-700 hover:from-emerald-500 hover:to-teal-500 shadow-lg shadow-emerald-500/30 hover:shadow-emerald-500/50 transition-all hover:scale-[1.02] active:scale-95 flex items-center justify-center gap-3 group"
+                className="w-full sm:w-auto px-8 py-4 text-base font-extrabold text-white rounded-2xl bg-gradient-to-r from-emerald-600 via-teal-600 to-emerald-700 hover:from-emerald-500 hover:to-teal-500 shadow-lg shadow-emerald-500/30 hover:shadow-emerald-500/50 transition-all hover:scale-[1.02] active:scale-95 flex items-center justify-center gap-3 group"
               >
                 <span>Calculate My Solar Savings</span>
                 <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
@@ -51,9 +51,9 @@ export default function Hero() {
 
               <a
                 href="#faq"
-                className="w-full sm:w-auto px-7 py-4 text-base font-semibold text-slate-700 dark:text-slate-200 border border-slate-300 dark:border-slate-700 hover:bg-slate-100 dark:hover:bg-slate-800/80 rounded-2xl transition-all flex items-center justify-center gap-2"
+                className="w-full sm:w-auto px-7 py-4 text-base font-extrabold text-slate-900 dark:text-slate-100 border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800/80 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-2xl transition-all flex items-center justify-center gap-2 shadow-sm"
               >
-                <ShieldCheck className="w-5 h-5 text-emerald-500" />
+                <ShieldCheck className="w-5 h-5 text-emerald-600 dark:text-emerald-400" />
                 <span>Subsidy Guide</span>
               </a>
             </div>

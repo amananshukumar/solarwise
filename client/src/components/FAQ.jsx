@@ -60,19 +60,19 @@ export default function FAQ() {
             return (
               <div
                 key={idx}
-                className="glass-card rounded-2xl border border-slate-200 dark:border-slate-800 overflow-hidden transition-all"
+                className="glass-card rounded-2xl border border-slate-300 dark:border-slate-800 bg-white dark:bg-slate-900 overflow-hidden transition-all shadow-sm"
               >
                 <button
                   onClick={() => toggleFAQ(idx)}
-                  className="w-full p-6 text-left flex items-center justify-between gap-4 font-bold text-slate-900 dark:text-white text-base sm:text-lg focus:outline-none"
+                  className="w-full p-6 text-left flex items-center justify-between gap-4 font-extrabold text-slate-950 dark:text-white text-base sm:text-lg focus:outline-none"
                 >
                   <span className="flex items-center gap-3">
                     <HelpCircle className="w-5 h-5 text-amber-500 shrink-0" />
                     <span>{faq.q}</span>
                   </span>
                   <ChevronDown
-                    className={`w-5 h-5 text-slate-400 shrink-0 transition-transform duration-300 ${
-                      isOpen ? 'rotate-180 text-emerald-500' : ''
+                    className={`w-5 h-5 text-slate-500 shrink-0 transition-transform duration-300 ${
+                      isOpen ? 'rotate-180 text-emerald-600 dark:text-emerald-400' : ''
                     }`}
                   />
                 </button>
@@ -85,7 +85,7 @@ export default function FAQ() {
                       exit={{ height: 0, opacity: 0 }}
                       transition={{ duration: 0.3 }}
                     >
-                      <div className="px-6 pb-6 pt-0 text-sm text-slate-600 dark:text-slate-300 leading-relaxed border-t border-slate-100 dark:border-slate-800/60 mt-2 pt-4">
+                      <div className="px-6 pb-6 pt-0 text-sm text-slate-800 dark:text-slate-300 font-medium leading-relaxed border-t border-slate-200 dark:border-slate-800/60 mt-2 pt-4">
                         {faq.a}
                       </div>
                     </motion.div>

@@ -244,57 +244,57 @@ export default function UserDashboard() {
 
             {/* Quick Stats Grid */}
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-              <div className="glass-card p-6 rounded-2xl border border-slate-200 dark:border-slate-800">
-                <span className="text-xs text-slate-500 font-bold uppercase">Saved Reports</span>
+              <div className="glass-card p-6 rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-sm">
+                <span className="text-xs text-slate-700 dark:text-slate-300 font-extrabold uppercase">Saved Reports</span>
                 <div className="text-3xl font-black text-slate-900 dark:text-white mt-1">
-                  {history.length} <span className="text-sm text-emerald-500 font-bold">Calculations</span>
+                  {history.length} <span className="text-sm text-emerald-600 dark:text-emerald-400 font-bold">Calculations</span>
                 </div>
               </div>
 
-              <div className="glass-card p-6 rounded-2xl border border-slate-200 dark:border-slate-800">
-                <span className="text-xs text-slate-500 font-bold uppercase">Cities Benchmarked</span>
-                <div className="text-3xl font-black text-amber-500 mt-1">
-                  {uniqueStates.length > 0 ? uniqueStates.length : 1} <span className="text-sm text-slate-400 font-bold">States</span>
+              <div className="glass-card p-6 rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-sm">
+                <span className="text-xs text-slate-700 dark:text-slate-300 font-extrabold uppercase">Cities Benchmarked</span>
+                <div className="text-3xl font-black text-amber-600 dark:text-amber-400 mt-1">
+                  {uniqueStates.length > 0 ? uniqueStates.length : 1} <span className="text-sm text-slate-500 dark:text-slate-400 font-bold">States</span>
                 </div>
               </div>
 
-              <div className="glass-card p-6 rounded-2xl border border-slate-200 dark:border-slate-800">
-                <span className="text-xs text-slate-500 font-bold uppercase">PM Surya Ghar Qualified</span>
+              <div className="glass-card p-6 rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-sm">
+                <span className="text-xs text-slate-700 dark:text-slate-300 font-extrabold uppercase">PM Surya Ghar Qualified</span>
                 <div className="text-3xl font-black text-emerald-600 dark:text-emerald-400 mt-1">
-                  ₹78,000 <span className="text-xs text-slate-400 font-normal">Max Subsidy</span>
+                  ₹78,000 <span className="text-xs text-slate-500 dark:text-slate-400 font-medium">Max Subsidy</span>
                 </div>
               </div>
 
-              <div className="glass-card p-6 rounded-2xl border border-slate-200 dark:border-slate-800">
-                <span className="text-xs text-slate-500 font-bold uppercase">Selected for Comparison</span>
-                <div className="text-3xl font-black text-teal-500 mt-1">
-                  {selectedReportsForCompare.length} <span className="text-sm text-slate-400 font-bold">/ 3 Reports</span>
+              <div className="glass-card p-6 rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-sm">
+                <span className="text-xs text-slate-700 dark:text-slate-300 font-extrabold uppercase">Selected for Comparison</span>
+                <div className="text-3xl font-black text-teal-600 dark:text-teal-400 mt-1">
+                  {selectedReportsForCompare.length} <span className="text-sm text-slate-500 dark:text-slate-400 font-bold">/ 3 Reports</span>
                 </div>
               </div>
             </div>
 
             {/* Search, Filter & Comparison Trigger Controls */}
-            <div className="glass-card rounded-2xl p-4 sm:p-6 border border-slate-200 dark:border-slate-800 flex flex-col md:flex-row items-center justify-between gap-4">
+            <div className="glass-card rounded-2xl p-4 sm:p-6 border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 flex flex-col md:flex-row items-center justify-between gap-4 shadow-sm">
               {/* Search Bar */}
               <div className="relative w-full md:w-80">
-                <Search className="w-4 h-4 absolute left-3.5 top-3.5 text-slate-400" />
+                <Search className="w-4 h-4 absolute left-3.5 top-3.5 text-slate-500 dark:text-slate-400" />
                 <input
                   type="text"
                   placeholder="Search by city or state..."
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
-                  className="w-full pl-10 pr-4 py-2.5 rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-sm text-slate-900 dark:text-white focus:ring-2 focus:ring-emerald-500 outline-none"
+                  className="w-full pl-10 pr-4 py-2.5 rounded-xl border border-slate-300 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-sm font-semibold text-slate-900 dark:text-white focus:ring-2 focus:ring-emerald-500 outline-none placeholder-slate-400 dark:placeholder-slate-500"
                 />
               </div>
 
               {/* Filter & Compare Buttons */}
               <div className="flex flex-wrap items-center gap-3 w-full md:w-auto justify-end">
                 <div className="flex items-center gap-2">
-                  <Filter className="w-4 h-4 text-slate-400" />
+                  <Filter className="w-4 h-4 text-slate-500 dark:text-slate-400" />
                   <select
                     value={selectedStateFilter}
                     onChange={(e) => setSelectedStateFilter(e.target.value)}
-                    className="px-3 py-2 rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-xs font-semibold text-slate-900 dark:text-white outline-none"
+                    className="px-3 py-2 rounded-xl border border-slate-300 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-xs font-semibold text-slate-900 dark:text-white outline-none"
                   >
                     <option value="All">All States</option>
                     {uniqueStates.map((st) => (

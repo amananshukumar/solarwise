@@ -74,20 +74,20 @@ export default function Benefits() {
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
               transition={{ duration: 0.5, delay: idx * 0.1 }}
-              className={`glass-card p-6 rounded-2xl border border-slate-200 dark:border-slate-800 hover:border-emerald-500/40 transition-all duration-300 bg-gradient-to-br ${item.color}`}
+              className="glass-card p-6 rounded-2xl border border-slate-300 dark:border-slate-800 bg-white dark:bg-slate-900 hover:border-emerald-500/50 transition-all duration-300 shadow-sm"
             >
               <div className="flex items-center justify-between mb-4">
-                <div className="w-12 h-12 rounded-xl bg-white dark:bg-slate-800 shadow-sm flex items-center justify-center">
+                <div className="w-12 h-12 rounded-xl bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 shadow-sm flex items-center justify-center">
                   {item.icon}
                 </div>
-                <span className="text-xs font-bold text-emerald-700 dark:text-emerald-300 bg-emerald-100 dark:bg-emerald-950/60 px-2.5 py-1 rounded-full">
+                <span className="text-xs font-extrabold text-emerald-900 dark:text-emerald-300 bg-emerald-100 dark:bg-emerald-950/60 px-2.5 py-1 rounded-full border border-emerald-500/30">
                   {item.tagline}
                 </span>
               </div>
-              <h3 className="text-xl font-bold text-slate-900 dark:text-white mb-2">
+              <h3 className="text-xl font-extrabold text-slate-950 dark:text-white mb-2">
                 {item.title}
               </h3>
-              <p className="text-sm text-slate-600 dark:text-slate-400 leading-relaxed">
+              <p className="text-sm text-slate-800 dark:text-slate-300 font-medium leading-relaxed">
                 {item.desc}
               </p>
             </motion.div>

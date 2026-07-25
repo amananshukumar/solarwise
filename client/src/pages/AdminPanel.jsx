@@ -300,19 +300,19 @@ export default function AdminPanel() {
 
             {/* TAB 1: State & Tariff Management Table */}
             {activeTab === 'tariffs' && (
-              <div className="glass-card rounded-3xl border border-slate-200 dark:border-slate-800 overflow-hidden shadow-xl">
+              <div className="glass-card rounded-3xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 overflow-hidden shadow-xl">
                 <div className="p-6 border-b border-slate-200 dark:border-slate-800 flex items-center justify-between">
                   <div>
                     <h3 className="text-lg font-extrabold text-slate-900 dark:text-white">
                       Indian State DISCOM Tariff & Solar Irradiance Records
                     </h3>
-                    <p className="text-xs text-slate-500">
+                    <p className="text-xs text-slate-600 dark:text-slate-400 font-medium">
                       Manage electricity rates (₹/kWh) and solar radiation benchmarks used by the backend engine.
                     </p>
                   </div>
                   <button
                     onClick={fetchAdminData}
-                    className="p-2 rounded-xl border border-slate-300 dark:border-slate-700 text-slate-500 hover:text-emerald-500"
+                    className="p-2 rounded-xl border border-slate-300 dark:border-slate-700 text-slate-600 dark:text-slate-300 hover:text-emerald-600 dark:hover:text-emerald-400"
                     title="Refresh Data"
                   >
                     <RefreshCw className="w-4 h-4" />
@@ -322,7 +322,7 @@ export default function AdminPanel() {
                 <div className="overflow-x-auto">
                   <table className="w-full text-left border-collapse">
                     <thead>
-                      <tr className="bg-slate-100/70 dark:bg-slate-800/70 text-slate-600 dark:text-slate-300 text-xs uppercase font-extrabold border-b border-slate-200 dark:border-slate-800">
+                      <tr className="bg-slate-100 dark:bg-slate-800 text-slate-800 dark:text-slate-200 text-xs uppercase font-extrabold border-b border-slate-200 dark:border-slate-800">
                         <th className="p-4">State Name</th>
                         <th className="p-4">DISCOM Name</th>
                         <th className="p-4">Default Rate (₹/kWh)</th>
@@ -334,27 +334,27 @@ export default function AdminPanel() {
                     <tbody className="divide-y divide-slate-100 dark:divide-slate-800 text-xs font-semibold">
                       {loading ? (
                         <tr>
-                          <td colSpan="6" className="p-8 text-center text-slate-500 font-bold">
+                          <td colSpan="6" className="p-8 text-center text-slate-600 dark:text-slate-300 font-bold">
                             Loading state records from database...
                           </td>
                         </tr>
                       ) : filteredStates.length === 0 ? (
                         <tr>
-                          <td colSpan="6" className="p-8 text-center text-slate-500">
+                          <td colSpan="6" className="p-8 text-center text-slate-600 dark:text-slate-300 font-medium">
                             No state records found matching "{searchQuery}"
                           </td>
                         </tr>
                       ) : (
                         filteredStates.map((st) => (
-                          <tr key={st._id || st.stateName} className="hover:bg-slate-50/50 dark:hover:bg-slate-800/50 transition-colors">
+                          <tr key={st._id || st.stateName} className="hover:bg-slate-50 dark:hover:bg-slate-800/60 transition-colors">
                             <td className="p-4 font-black text-slate-900 dark:text-white flex items-center gap-2">
                               <span className="w-2 h-2 rounded-full bg-emerald-500" />
                               <span>{st.stateName}</span>
                             </td>
-                            <td className="p-4 text-slate-600 dark:text-slate-300">{st.discomName || 'State DISCOM'}</td>
+                            <td className="p-4 text-slate-800 dark:text-slate-200 font-semibold">{st.discomName || 'State DISCOM'}</td>
                             <td className="p-4 font-bold text-emerald-600 dark:text-emerald-400">₹{st.defaultRatePerKwh} / kWh</td>
-                            <td className="p-4 font-bold text-amber-500">{st.solarIrradiance} kWh/m²</td>
-                            <td className="p-4 text-slate-500 max-w-xs truncate">
+                            <td className="p-4 font-bold text-amber-600 dark:text-amber-400">{st.solarIrradiance} kWh/m²</td>
+                            <td className="p-4 text-slate-600 dark:text-slate-400 max-w-xs truncate font-medium">
                               {Array.isArray(st.cities) ? st.cities.join(', ') : st.cities}
                             </td>
                             <td className="p-4 text-right space-x-2">

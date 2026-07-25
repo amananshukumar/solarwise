@@ -32,8 +32,8 @@ export default function Navbar() {
 
   const linkClass = (isActive) =>
     isActive
-      ? 'text-emerald-600 dark:text-emerald-400 font-extrabold border-b-2 border-emerald-500 pb-1 shadow-sm transition-all flex items-center gap-1.5'
-      : 'text-slate-700 dark:text-slate-200 font-semibold border-b-2 border-transparent pb-1 hover:text-emerald-600 dark:hover:text-emerald-400 hover:border-emerald-400/50 transition-all flex items-center gap-1.5';
+      ? 'text-emerald-700 dark:text-emerald-400 font-black border-b-2 border-emerald-600 pb-1 shadow-sm transition-all flex items-center gap-1.5'
+      : 'text-slate-900 dark:text-slate-100 font-bold border-b-2 border-transparent pb-1 hover:text-emerald-600 dark:hover:text-emerald-400 hover:border-emerald-400/50 transition-all flex items-center gap-1.5';
 
   return (
     <header className="sticky top-0 z-40 w-full glass-nav transition-all duration-300">
