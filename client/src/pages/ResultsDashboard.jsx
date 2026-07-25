@@ -51,6 +51,7 @@ import {
 } from 'recharts';
 import BatteryRecommendation from '../components/battery/BatteryRecommendation';
 import PanelComparison from '../components/panels/PanelComparison';
+import InstallerConnectModal from '../components/InstallerConnectModal';
 import Navbar from '../components/Navbar';
 import Footer from '../components/Footer';
 import CitySolarMap from '../components/CitySolarMap';
@@ -66,6 +67,7 @@ export default function ResultsDashboard() {
 
   const [savingReport, setSavingReport] = useState(false);
   const [reportSaved, setReportSaved] = useState(false);
+  const [isInstallerModalOpen, setIsInstallerModalOpen] = useState(false);
 
   // Retrieve report passed from CalculatorPage or fallback demo report
   const rawReport = location.state?.reportData;
@@ -710,7 +712,7 @@ export default function ResultsDashboard() {
             </div>
 
             <button
-              onClick={() => openAuthModal('register')}
+              onClick={() => setIsInstallerModalOpen(true)}
               className="px-8 py-4 bg-gradient-to-r from-amber-400 to-amber-500 hover:from-amber-300 hover:to-amber-400 text-slate-950 font-black text-sm rounded-2xl shadow-xl hover:scale-105 transition-all shrink-0 flex items-center gap-2"
             >
               <span>Connect With Local Installers</span>
@@ -720,6 +722,15 @@ export default function ResultsDashboard() {
 
         </div>
       </main>
+
+      {/* Installer Connection Modal */}
+      <InstallerConnectModal
+        isOpen={isInstallerModalOpen}
+        onClose={() => setIsInstallerModalOpen(false)}
+        city={report.inputs.city}
+        state={report.inputs.state}
+        recommendedKw={report.system.recommendedKw}
+      />
 
       <Footer />
     </div>
