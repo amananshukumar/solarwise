@@ -421,6 +421,13 @@ export default function UserDashboard() {
                           </div>
 
                           <div className="flex items-center justify-between text-xs">
+                            <span className="text-slate-500 dark:text-slate-400 font-semibold">Daily Energy Generation:</span>
+                            <span className="font-black text-teal-600 dark:text-teal-400">
+                              {resData.generation?.dailyGenerationKwh || (Number(resData.recommendedKw || 3) * 4.4).toFixed(1)} kWh / day
+                            </span>
+                          </div>
+
+                          <div className="flex items-center justify-between text-xs">
                             <span className="text-slate-500 dark:text-slate-400">PM Surya Ghar Subsidy:</span>
                             <span className="font-bold text-amber-500">
                               ₹{(resData.centralSubsidy || 78000).toLocaleString('en-IN')}

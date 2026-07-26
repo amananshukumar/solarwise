@@ -444,7 +444,7 @@ export default function ResultsDashboard() {
           )}
 
           {/* Roof Suitability & Key Metric Cards Grid */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-6">
             
             {/* Card 1: Roof Suitability Gauge */}
             <motion.div
@@ -454,9 +454,9 @@ export default function ResultsDashboard() {
               className="glass-card p-6 rounded-2xl border border-emerald-500/30 bg-emerald-50/20 dark:bg-emerald-950/20 flex items-center justify-between"
             >
               <div>
-                <span className="text-xs text-slate-500 dark:text-slate-400 font-bold uppercase tracking-wider">Roof Suitability</span>
-                <div className="text-3xl font-black text-slate-900 dark:text-white mt-1">
-                  {report.suitability.score} <span className="text-base text-emerald-500 font-bold">/ 100</span>
+                <span className="text-xs text-emerald-700 dark:text-emerald-300 font-bold uppercase tracking-wider">Roof Suitability</span>
+                <div className="text-3xl font-black text-emerald-600 dark:text-emerald-400 mt-1">
+                  {report.suitability.score} <span className="text-base font-bold">/ 100</span>
                 </div>
                 <span className="text-xs font-extrabold text-emerald-600 dark:text-emerald-400 uppercase tracking-wider mt-1 block">
                   {report.suitability.rating} Rating
@@ -467,7 +467,28 @@ export default function ResultsDashboard() {
               </div>
             </motion.div>
 
-            {/* Card 2: 550W Panels Count */}
+            {/* Card 2: Daily Energy Generation */}
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.4, delay: 0.12 }}
+              className="glass-card p-6 rounded-2xl border border-teal-500/30 bg-teal-50/20 dark:bg-teal-950/20 flex items-center justify-between shadow-md"
+            >
+              <div>
+                <span className="text-xs text-teal-700 dark:text-teal-300 font-bold uppercase tracking-wider">Daily Generation</span>
+                <div className="text-3xl font-black text-teal-600 dark:text-teal-400 mt-1">
+                  {report.generation.dailyGenerationKwh} <span className="text-base font-bold text-teal-500">kWh/day</span>
+                </div>
+                <span className="text-xs text-teal-800 dark:text-teal-300 font-medium mt-1 block">
+                  ~{report.generation.annualGenerationKwh.toLocaleString('en-IN')} kWh / year
+                </span>
+              </div>
+              <div className="w-12 h-12 rounded-2xl bg-teal-500/10 text-teal-500 flex items-center justify-center">
+                <Zap className="w-7 h-7" />
+              </div>
+            </motion.div>
+
+            {/* Card 3: 550W Panels Count */}
             <motion.div
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
@@ -480,7 +501,7 @@ export default function ResultsDashboard() {
                   {report.system.panelCount} <span className="text-base text-amber-500 font-bold">Panels</span>
                 </div>
                 <span className="text-xs text-slate-500 mt-1 block">
-                  {report.system.recommendedKw} kW • {report.roof.usableRoofAreaSqFt} sq.ft usable roof
+                  {report.system.recommendedKw} kW • {report.roof.usableRoofAreaSqFt} sq.ft roof
                 </span>
               </div>
               <div className="w-12 h-12 rounded-2xl bg-amber-500/10 text-amber-500 flex items-center justify-center">
@@ -488,7 +509,7 @@ export default function ResultsDashboard() {
               </div>
             </motion.div>
 
-            {/* Card 3: PM Surya Ghar Subsidy */}
+            {/* Card 4: PM Surya Ghar Subsidy */}
             <motion.div
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
@@ -509,7 +530,7 @@ export default function ResultsDashboard() {
               </div>
             </motion.div>
 
-            {/* Card 4: Break-Even Period */}
+            {/* Card 5: Break-Even Period */}
             <motion.div
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
