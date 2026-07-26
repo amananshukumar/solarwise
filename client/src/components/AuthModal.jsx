@@ -14,6 +14,7 @@ export default function AuthModal() {
     register,
     handleSubmit,
     reset,
+    clearErrors,
     formState: { errors },
   } = useForm();
 
@@ -23,6 +24,7 @@ export default function AuthModal() {
     setAuthModalTab(tab);
     setServerError('');
     setServerSuccess('');
+    clearErrors();
     reset();
   };
 
@@ -45,11 +47,16 @@ export default function AuthModal() {
         password: data.password,
         state: data.state || 'Maharashtra',
         monthlyBill: Number(data.monthlyBill) || 4000,
+        requestAdmin: Boolean(data.requestAdmin),
       });
       if (!res.success) {
         setServerError(res.message);
       } else {
-        setServerSuccess('Registration successful! Welcome to SolarWise India.');
+        setServerSuccess(
+          data.requestAdmin
+            ? 'Registration successful! Your Admin privilege request has been submitted for administrator review.'
+            : 'Registration successful! Welcome to SolarWise India.'
+        );
       }
     }
     setLoading(false);
@@ -150,19 +157,21 @@ export default function AuthModal() {
           {/* Form */}
           <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
             {authModalTab === 'register' && (
-              <div className="space-y-1">
-                <label className="text-xs font-bold text-slate-800 dark:text-slate-200">Full Name</label>
-                <div className="relative">
-                  <User className="w-4 h-4 absolute left-3.5 top-3 text-slate-500 dark:text-slate-400" />
-                  <input
-                    type="text"
-                    placeholder="e.g. Rajesh Sharma"
-                    {...register('name', { required: 'Name is required' })}
-                    className="w-full pl-10 pr-4 py-2.5 rounded-xl border border-slate-300 dark:border-slate-700 bg-slate-50 dark:bg-slate-800/80 text-sm font-semibold text-slate-900 dark:text-white focus:ring-2 focus:ring-emerald-500 outline-none placeholder-slate-400 dark:placeholder-slate-500"
-                  />
+              <>
+                <div className="space-y-1">
+                  <label className="text-xs font-bold text-slate-800 dark:text-slate-200">Full Name</label>
+                  <div className="relative">
+                    <User className="w-4 h-4 absolute left-3.5 top-3 text-slate-500 dark:text-slate-400" />
+                    <input
+                      type="text"
+                      placeholder="e.g. Rajesh Sharma"
+                      {...register('name', { required: authModalTab === 'register' ? 'Name is required' : false })}
+                      className="w-full pl-10 pr-4 py-2.5 rounded-xl border border-slate-300 dark:border-slate-700 bg-slate-50 dark:bg-slate-800/80 text-sm font-semibold text-slate-900 dark:text-white focus:ring-2 focus:ring-emerald-500 outline-none placeholder-slate-400 dark:placeholder-slate-500"
+                    />
+                  </div>
+                  {errors.name && <span className="text-[11px] text-red-500">{errors.name.message}</span>}
                 </div>
-                {errors.name && <span className="text-[11px] text-red-500">{errors.name.message}</span>}
-              </div>
+              </>
             )}
 
             <div className="space-y-1">
@@ -200,40 +209,54 @@ export default function AuthModal() {
             </div>
 
             {authModalTab === 'register' && (
-              <div className="grid grid-cols-2 gap-3 pt-1">
-                <div className="space-y-1">
-                  <label className="text-xs font-bold text-slate-800 dark:text-slate-200">State</label>
-                  <div className="relative">
-                    <MapPin className="w-4 h-4 absolute left-3 top-3 text-slate-500 dark:text-slate-400" />
-                    <select
-                      {...register('state')}
-                      className="w-full pl-8 pr-2 py-2.5 rounded-xl border border-slate-300 dark:border-slate-700 bg-slate-50 dark:bg-slate-800/80 text-xs font-semibold text-slate-900 dark:text-white focus:ring-2 focus:ring-emerald-500 outline-none"
-                    >
-                      <option value="Maharashtra">Maharashtra</option>
-                      <option value="Gujarat">Gujarat</option>
-                      <option value="Karnataka">Karnataka</option>
-                      <option value="Delhi">Delhi</option>
-                      <option value="Uttar Pradesh">Uttar Pradesh</option>
-                      <option value="Rajasthan">Rajasthan</option>
-                      <option value="Tamil Nadu">Tamil Nadu</option>
-                      <option value="Bihar">Bihar</option>
-                    </select>
+              <>
+                <div className="grid grid-cols-2 gap-3 pt-1">
+                  <div className="space-y-1">
+                    <label className="text-xs font-bold text-slate-800 dark:text-slate-200">State</label>
+                    <div className="relative">
+                      <MapPin className="w-4 h-4 absolute left-3 top-3 text-slate-500 dark:text-slate-400" />
+                      <select
+                        {...register('state')}
+                        className="w-full pl-8 pr-2 py-2.5 rounded-xl border border-slate-300 dark:border-slate-700 bg-slate-50 dark:bg-slate-800/80 text-xs font-semibold text-slate-900 dark:text-white focus:ring-2 focus:ring-emerald-500 outline-none"
+                      >
+                        <option value="Maharashtra">Maharashtra</option>
+                        <option value="Gujarat">Gujarat</option>
+                        <option value="Karnataka">Karnataka</option>
+                        <option value="Delhi">Delhi</option>
+                        <option value="Uttar Pradesh">Uttar Pradesh</option>
+                        <option value="Rajasthan">Rajasthan</option>
+                        <option value="Tamil Nadu">Tamil Nadu</option>
+                        <option value="Bihar">Bihar</option>
+                      </select>
+                    </div>
+                  </div>
+
+                  <div className="space-y-1">
+                    <label className="text-xs font-bold text-slate-800 dark:text-slate-200">Monthly Bill (₹)</label>
+                    <div className="relative">
+                      <IndianRupee className="w-4 h-4 absolute left-3 top-3 text-slate-500 dark:text-slate-400" />
+                      <input
+                        type="number"
+                        placeholder="4000"
+                        {...register('monthlyBill')}
+                        className="w-full pl-8 pr-2 py-2.5 rounded-xl border border-slate-300 dark:border-slate-700 bg-slate-50 dark:bg-slate-800/80 text-xs font-semibold text-slate-900 dark:text-white focus:ring-2 focus:ring-emerald-500 outline-none placeholder-slate-400 dark:placeholder-slate-500"
+                      />
+                    </div>
                   </div>
                 </div>
 
-                <div className="space-y-1">
-                  <label className="text-xs font-bold text-slate-800 dark:text-slate-200">Monthly Bill (₹)</label>
-                  <div className="relative">
-                    <IndianRupee className="w-4 h-4 absolute left-3 top-3 text-slate-500 dark:text-slate-400" />
-                    <input
-                      type="number"
-                      placeholder="4000"
-                      {...register('monthlyBill')}
-                      className="w-full pl-8 pr-2 py-2.5 rounded-xl border border-slate-300 dark:border-slate-700 bg-slate-50 dark:bg-slate-800/80 text-xs font-semibold text-slate-900 dark:text-white focus:ring-2 focus:ring-emerald-500 outline-none placeholder-slate-400 dark:placeholder-slate-500"
-                    />
-                  </div>
+                <div className="flex items-center gap-2 pt-2 text-xs font-semibold text-slate-800 dark:text-slate-200">
+                  <input
+                    type="checkbox"
+                    id="requestAdmin"
+                    {...register('requestAdmin')}
+                    className="w-4 h-4 text-emerald-600 rounded focus:ring-emerald-500 border-slate-300 dark:border-slate-700 accent-emerald-600 cursor-pointer"
+                  />
+                  <label htmlFor="requestAdmin" className="cursor-pointer">
+                    Request Admin Privileges <span className="text-[10px] text-slate-500 dark:text-slate-400 font-normal">(Requires existing Admin review)</span>
+                  </label>
                 </div>
-              </div>
+              </>
             )}
 
             <button

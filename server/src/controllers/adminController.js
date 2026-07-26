@@ -218,10 +218,170 @@ const deleteState = async (req, res) => {
   }
 };
 
+// @desc    Get all non-admin users & pending admin privilege requests
+// @route   GET /api/admin/pending-requests
+// @access  Private/Admin
+const getPendingAdminRequests = async (req, res) => {
+  try {
+    let pendingUsers = [];
+
+    try {
+      pendingUsers = await User.find({
+        role: { $ne: 'admin' },
+      }).select('-password');
+    } catch (dbErr) {
+      console.warn('DB pending users query failed, checking memory fallback:', dbErr.message);
+    }
+
+    // Merge in-memory fallback users if any exist
+    try {
+      const { fallbackUsers } = require('./authController');
+      if (Array.isArray(fallbackUsers)) {
+        fallbackUsers.forEach((u) => {
+          if (u.role !== 'admin') {
+            if (!pendingUsers.some((p) => (p.email && p.email.toLowerCase() === u.email.toLowerCase()) || (p._id && p._id.toString() === u.id))) {
+              pendingUsers.push({
+                _id: u.id,
+                name: u.name,
+                email: u.email,
+                role: u.role,
+                state: u.state || 'Maharashtra',
+                adminRequested: Boolean(u.adminRequested),
+                adminStatus: u.adminRequested ? 'pending' : 'none',
+              });
+            }
+          }
+        });
+      }
+    } catch (memErr) {
+      console.warn('Fallback users merge note:', memErr.message);
+    }
+
+    // Sort so users who explicitly requested admin privileges appear FIRST
+    pendingUsers.sort((a, b) => (b.adminRequested ? 1 : 0) - (a.adminRequested ? 1 : 0));
+
+    return res.json({
+      success: true,
+      count: pendingUsers.length,
+      data: pendingUsers,
+    });
+  } catch (error) {
+    console.error('Error fetching pending admin requests:', error);
+    return res.status(500).json({
+      success: false,
+      message: 'Failed to fetch pending admin requests',
+    });
+  }
+};
+
+// @desc    Approve a pending admin request
+// @route   PUT /api/admin/approve-request/:id
+// @access  Private/Admin
+const approveAdminRequest = async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    // Try MongoDB update using findByIdAndUpdate (preserves password hash 100%)
+    try {
+      const user = await User.findByIdAndUpdate(
+        id,
+        { role: 'admin', adminStatus: 'approved', adminRequested: true },
+        { new: true }
+      );
+      if (user) {
+        return res.json({
+          success: true,
+          message: `User ${user.name} (${user.email}) promoted to Admin successfully!`,
+          data: user,
+        });
+      }
+    } catch (dbErr) {
+      console.warn('DB findByIdAndUpdate error:', dbErr.message);
+    }
+
+    // Fallback in-memory update
+    const { fallbackUsers } = require('./authController');
+    if (Array.isArray(fallbackUsers)) {
+      const memUser = fallbackUsers.find((u) => u.id === id || u.email === id);
+      if (memUser) {
+        memUser.role = 'admin';
+        memUser.adminStatus = 'approved';
+        return res.json({
+          success: true,
+          message: `User ${memUser.name} (${memUser.email}) promoted to Admin successfully! (Dev Mode)`,
+          data: memUser,
+        });
+      }
+    }
+
+    return res.status(404).json({ success: false, message: 'User not found' });
+  } catch (error) {
+    console.error('Error approving admin request:', error);
+    return res.status(500).json({
+      success: false,
+      message: 'Failed to approve admin request',
+    });
+  }
+};
+
+// @desc    Reject a pending admin request
+// @route   PUT /api/admin/reject-request/:id
+// @access  Private/Admin
+const rejectAdminRequest = async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    // Try MongoDB update
+    try {
+      const user = await User.findByIdAndUpdate(
+        id,
+        { role: 'user', adminStatus: 'rejected', adminRequested: false },
+        { new: true }
+      );
+      if (user) {
+        return res.json({
+          success: true,
+          message: `Admin request for ${user.name} (${user.email}) rejected.`,
+          data: user,
+        });
+      }
+    } catch (dbErr) {
+      console.warn('DB findByIdAndUpdate error:', dbErr.message);
+    }
+
+    // Fallback in-memory update
+    const { fallbackUsers } = require('./authController');
+    if (Array.isArray(fallbackUsers)) {
+      const memUser = fallbackUsers.find((u) => u.id === id || u.email === id);
+      if (memUser) {
+        memUser.role = 'user';
+        memUser.adminStatus = 'rejected';
+        memUser.adminRequested = false;
+        return res.json({
+          success: true,
+          message: `Admin request for ${memUser.name} (${memUser.email}) rejected. (Dev Mode)`,
+          data: memUser,
+        });
+      }
+    }
+
+    return res.status(404).json({ success: false, message: 'User not found' });
+  } catch (error) {
+    console.error('Error rejecting admin request:', error);
+    return res.status(500).json({
+      success: false,
+      message: 'Failed to reject admin request',
+    });
+  }
+};
+
 module.exports = {
   getAdminStats,
   getAllStates,
   createState,
   updateState,
   deleteState,
+  getPendingAdminRequests,
+  approveAdminRequest,
+  rejectAdminRequest,
 };

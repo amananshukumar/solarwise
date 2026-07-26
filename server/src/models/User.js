@@ -35,6 +35,15 @@ const userSchema = new mongoose.Schema(
       type: Number,
       default: 0,
     },
+    adminRequested: {
+      type: Boolean,
+      default: false,
+    },
+    adminStatus: {
+      type: String,
+      enum: ['none', 'pending', 'approved', 'rejected'],
+      default: 'none',
+    },
   },
   {
     timestamps: true,

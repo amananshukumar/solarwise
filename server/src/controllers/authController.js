@@ -22,10 +22,12 @@ const fallbackUsers = [];
 
 // @desc    Register a new user
 // @route   POST /api/auth/register
+// @desc    Register a new user
+// @route   POST /api/auth/register
 // @access  Public
 const registerUser = async (req, res) => {
   try {
-    const { name, email, password, state, monthlyBill } = req.body;
+    const { name, email, password, state, monthlyBill, requestAdmin } = req.body;
 
     if (!name || !email || !password) {
       return res.status(400).json({
@@ -34,9 +36,11 @@ const registerUser = async (req, res) => {
       });
     }
 
+    const cleanEmail = email.trim().toLowerCase();
+
     // Try MongoDB first
     try {
-      const userExists = await User.findOne({ email });
+      const userExists = await User.findOne({ email: cleanEmail });
       if (userExists) {
         return res.status(400).json({
           success: false,
@@ -44,19 +48,25 @@ const registerUser = async (req, res) => {
         });
       }
 
+      const isReqAdmin = Boolean(requestAdmin);
+
       const user = await User.create({
         name,
-        email,
+        email: cleanEmail,
         password,
         state: state || 'Maharashtra',
         monthlyBill: monthlyBill || 0,
+        adminRequested: isReqAdmin,
+        adminStatus: isReqAdmin ? 'pending' : 'none',
       });
 
       const token = generateToken(user);
 
       return res.status(201).json({
         success: true,
-        message: 'User registered successfully',
+        message: isReqAdmin
+          ? 'User registered! Admin privileges request submitted for approval.'
+          : 'User registered successfully',
         token,
         user: {
           id: user._id,
@@ -65,11 +75,14 @@ const registerUser = async (req, res) => {
           role: user.role,
           state: user.state,
           monthlyBill: user.monthlyBill,
+          adminRequested: user.adminRequested,
+          adminStatus: user.adminStatus,
         },
       });
     } catch (dbErr) {
+      console.warn('MongoDB creation note:', dbErr.message);
       // Fallback in-memory registration if Mongoose operation fails
-      const existingInMemory = fallbackUsers.find((u) => u.email === email.toLowerCase());
+      const existingInMemory = fallbackUsers.find((u) => u.email === cleanEmail);
       if (existingInMemory) {
         return res.status(400).json({
           success: false,
@@ -77,14 +90,17 @@ const registerUser = async (req, res) => {
         });
       }
 
+      const isReqAdmin = Boolean(requestAdmin);
       const newUser = {
         id: 'user_' + Date.now(),
         name,
-        email: email.toLowerCase(),
+        email: cleanEmail,
         password, // In real DB this is hashed
         role: 'user',
         state: state || 'Maharashtra',
         monthlyBill: monthlyBill || 0,
+        adminRequested: isReqAdmin,
+        adminStatus: isReqAdmin ? 'pending' : 'none',
       };
       fallbackUsers.push(newUser);
 
@@ -101,6 +117,8 @@ const registerUser = async (req, res) => {
           role: newUser.role,
           state: newUser.state,
           monthlyBill: newUser.monthlyBill,
+          adminRequested: newUser.adminRequested,
+          adminStatus: newUser.adminStatus,
         },
       });
     }
@@ -127,8 +145,10 @@ const loginUser = async (req, res) => {
       });
     }
 
+    const cleanEmail = email.trim().toLowerCase();
+
     try {
-      const user = await User.findOne({ email }).select('+password');
+      const user = await User.findOne({ email: cleanEmail }).select('+password');
 
       if (user && (await user.matchPassword(password))) {
         const token = generateToken(user);
@@ -146,27 +166,29 @@ const loginUser = async (req, res) => {
         });
       }
     } catch (dbErr) {
-      // Check in-memory fallback
-      const fbUser = fallbackUsers.find((u) => u.email === email.toLowerCase());
-      if (fbUser && fbUser.password === password) {
-        const token = generateToken(fbUser);
-        return res.json({
-          success: true,
-          token,
-          user: {
-            id: fbUser.id,
-            name: fbUser.name,
-            email: fbUser.email,
-            role: fbUser.role,
-            state: fbUser.state,
-            monthlyBill: fbUser.monthlyBill,
-          },
-        });
-      }
+      console.warn('DB findOne failed during login:', dbErr.message);
+    }
+
+    // Check in-memory fallback
+    const fbUser = fallbackUsers.find((u) => u.email === cleanEmail);
+    if (fbUser && fbUser.password === password) {
+      const token = generateToken(fbUser);
+      return res.json({
+        success: true,
+        token,
+        user: {
+          id: fbUser.id,
+          name: fbUser.name,
+          email: fbUser.email,
+          role: fbUser.role,
+          state: fbUser.state,
+          monthlyBill: fbUser.monthlyBill,
+        },
+      });
     }
 
     // Default demo user fallback for testing out of box
-    if (email === 'demo@solarwise.in' && password === 'solar123') {
+    if (cleanEmail === 'demo@solarwise.in' && password === 'solar123') {
       const demoUser = {
         id: 'demo_user_1',
         name: 'Rajesh Sharma',
@@ -217,4 +239,5 @@ module.exports = {
   registerUser,
   loginUser,
   getMe,
+  fallbackUsers,
 };
