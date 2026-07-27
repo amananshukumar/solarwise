@@ -136,4 +136,4 @@ Open `http://localhost:5173` in your browser.
 
 ## 📜 License & Compliance
 
-Developed for clean energy transition under India's **PM Surya Ghar Muft Bijli Yojana** guidelines. Released under the ISC License.
+Developed for clean energy transition under India's **PM Surya Ghar Muft Bijli Yojana** guidelines. Released under the ISC License
